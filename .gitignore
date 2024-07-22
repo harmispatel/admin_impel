@@ -16,6 +16,8 @@ public/images
 public_html/storage
 public_html/hot
 
+sheet_credentials.json
+
 storage/*.key
 .env
 Homestead.yaml
