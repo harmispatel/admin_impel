@@ -149,7 +149,7 @@ class AdminSettingsController extends Controller
 
     }
 
-    public function GetCategoryReadyToDispatch(Request $request)
+    public function GetCategoryReadyToDispatch()
     {
         // Initialize curl
         $curl = curl_init();
@@ -215,49 +215,110 @@ class AdminSettingsController extends Controller
         curl_close($curl);
 
         $data = json_decode($response);
-        return $data->Filters->ItemGroups;
+        return $data->Filters->ItemGroups ?? [];
     }
 
     // ready to dispatch price calculator
-    function PriceCalcReadyToDispatch(Request $request)
+    function PriceCalcReadyToDispatch()
     {
         if(Auth::guard('admin')->user()->can('price_calculate.make_by_order_ready_to_dispatch')){
             $settings = getAdminSettings();
-            $categories = $this->GetCategoryReadyToDispatch($request);
-            return view("admin.settings.price_calculate.make_by_order_ready_to_dispatch",compact(['settings', 'categories']));
-
+            $categories = $this->GetCategoryReadyToDispatch();
+            $silver_categories = $this->silverCategories(['company_id' => 3]);
+            return view("admin.settings.price_calculate.make_by_order_ready_to_dispatch",compact(['settings', 'categories', 'silver_categories']));
         }else{
             return redirect()->route('admin.dashboard')->with('error','You have no rights for this action!');
         }
+    }
 
+    public function silverCategories($filter) 
+    {
+        // Initialize curl
+        $curl = curl_init();
+
+        // Set the POST URL
+        $url = 'https://api.indianjewelcast.com/api/Tag/GetFilters';
+
+        $request = [
+            "DeviceID" => 0,
+            "SortBy" => "",
+            "SearchText" => "",
+            "TranType" => "",
+            "CatalogType" => "",
+            "CommaSeperate_CompanyID" => $filter['company_id'],
+            "CommaSeperate_ItemGroupID" => "",
+            "CommaSeperate_ItemID" => "",
+            "CommaSeperate_StyleID" => "",
+            "CommaSeperate_ProductID" => "",
+            "CommaSeperate_SubItemID" => "",
+            "CommaSeperate_AppItemCategoryID" => "",
+            "CommaSeperate_ItemSubID" => "",
+            "CommaSeperate_KarigarID" => "",
+            "CommaSeperate_BranchID" => "",
+            "CommaSeperate_Size" => "",
+            "CommaSeperate_CounterID" => "",
+            "MaxNetWt" => "",
+            "MinNetWt" => "",
+            "OnlyCartItem" => false,
+            "OnlyWishlistItem" => false,
+            "StockStatus" => "",
+            "FilterType" => "",
+            "DoNotShowInClientApp" => "",
+            "HasTagImage" => ""
+        ];
+
+        // Set the POST data
+        $data = json_encode($request);
+
+        // Set curl options
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                // Add any other headers if required
+            ],
+            CURLOPT_TIMEOUT => 30, // Timeout in seconds
+            CURLOPT_CONNECTTIMEOUT => 10, // Connection timeout in seconds
+        ]);
+
+        // Execute the request
+        $response = curl_exec($curl);
+
+        // Check for errors
+        if (curl_errno($curl)) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            return $error;
+        }
+
+        // Close curl
+        curl_close($curl);
+
+        $data = json_decode($response);
+        return $data->Filters->SubItems ?? [];
     }
 
     function updatePriceCalcReadyToDispatch(Request $request)
     {
         try{
             $settings = $request->settings;
+
+            // For Gold
             $settings['sales_wastage_rtd'] = (isset($settings['sales_wastage_rtd'])) ? serialize($settings['sales_wastage_rtd']) : '';
             $settings['sales_wastage_discount_rtd'] = (isset($settings['sales_wastage_discount_rtd'])) ? serialize($settings['sales_wastage_discount_rtd']) : '';
-            $categoryNames = $request->category_name;
-            $categoryId = $request->category_id;
+
+            // For Silver
+            $settings['sales_price_rtd_silver'] = (isset($settings['sales_price_rtd_silver'])) ? serialize($settings['sales_price_rtd_silver']) : '';
+            $settings['sales_discount_rtd_silver'] = (isset($settings['sales_discount_rtd_silver'])) ? serialize($settings['sales_discount_rtd_silver']) : '';
 
             if(Auth::guard('admin')->user()->can('price-calculator.update-ready-to-dispatch')){
-                foreach ($categoryId as $index => $id) {
-                    $category_exist = ReadyCategory::where('category_id', $id)->first();
-                    if (!empty($category_exist)) {
-                        $category_exist->category_name = $categoryNames[$index];
-                        $category_exist->update();
-                    } else {
-                        $new_category = new ReadyCategory();
-                        $new_category->category_name = $categoryNames[$index];
-                        $new_category->category_id = $id;
-                        $new_category->save();
-                    }
-                }
                 if(count($settings) > 0){
                     foreach ($settings as $key => $setting){
 
-                        $is_exists = AdminSetting::where('setting_key',$key)->first();
+                        $is_exists = AdminSetting::where('setting_key', $key)->first();
                         $setting_id = (isset($is_exists['id']) && !empty($is_exists['id'])) ? $is_exists['id'] : '';
 
                         if(!empty($setting_id) || $setting_id != ''){
@@ -271,15 +332,14 @@ class AdminSettingsController extends Controller
                             $new_settings->save();
                         }
 
-                }
+                    }
 
-                return redirect()->route('price_calculate.make_by_order_ready_to_dispatch')->with('success', 'Ready To Dispatch price has been Updated.');
-            }else{
-                return redirect()->route('admin.dashboard')->with('error','You have no rights for this action!');
+                    return redirect()->route('price_calculate.make_by_order_ready_to_dispatch')->with('success', 'Ready To Dispatch price has been Updated.');
+                }else{
+                    return redirect()->route('admin.dashboard')->with('error','You have no rights for this action!');
+                }
             }
-        }
         }catch (\Throwable $th){
-            dd($th);
             return redirect()->back()->with('error', 'Oops, Something went wrong!');
         }
     }

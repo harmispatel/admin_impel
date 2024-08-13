@@ -2294,7 +2294,30 @@ class CustomerApiController extends Controller
                 return $this->sendApiResponse(false, 0, 'User Not Found!', (object)[]);
             }
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+        }
+    }
+
+    // Get Price for Ready to Dispatch
+    public function readyToDispatchPrice(Request $request)
+    {
+        try {
+            $admin_settings = getAdminSettings();
+
+            // Get Gold Price
+            $gold_data['gold_price_24k_1gm_rtd'] = (isset($admin_settings['gold_price_24k_1gm_mbo_rtd']) && !empty($admin_settings['gold_price_24k_1gm_mbo_rtd'])) ? $admin_settings['gold_price_24k_1gm_mbo_rtd'] : 0;
+            $gold_data['sales_wastage_rtd'] = (isset($admin_settings['sales_wastage_rtd']) && !empty($admin_settings['sales_wastage_rtd'])) ? unserialize($admin_settings['sales_wastage_rtd']) : [];
+            $gold_data['sales_wastage_discount_rtd'] = (isset($admin_settings['sales_wastage_discount_rtd']) && !empty($admin_settings['sales_wastage_discount_rtd'])) ? unserialize($admin_settings['sales_wastage_discount_rtd']) : [];
+            $data['gold_price'] = $gold_data;
+
+            // Get Silver Price
+            $silver_data['sales_price_rtd_silver'] = (isset($admin_settings['sales_price_rtd_silver']) && !empty($admin_settings['sales_price_rtd_silver'])) ? unserialize($admin_settings['sales_price_rtd_silver']) : [];
+            $silver_data['sales_discount_rtd_silver'] = (isset($admin_settings['sales_discount_rtd_silver']) && !empty($admin_settings['sales_discount_rtd_silver'])) ? unserialize($admin_settings['sales_discount_rtd_silver']) : [];
+            $data['silver_price'] = $silver_data;
+
+            return $this->sendApiResponse(true, 0, 'Price has been Retrived.', $data);
+           
+        } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
     }

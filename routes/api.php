@@ -176,3 +176,5 @@ Route::post('ready-to-dispatch', [CustomerApiController::class, 'readyToDispatch
 Route::post('ready-to-dispatch-details', [CustomerApiController::class, 'readyToDispatchDetails']);
 
 Route::post('ready-to-dispatch-filters', [CustomerApiController::class, 'readyToDispatchFilters']);
+
+Route::post('ready-to-dispatch-price', [CustomerApiController::class, 'readyToDispatchPrice']);
