@@ -2304,19 +2304,13 @@ class CustomerApiController extends Controller
         try {
             $admin_settings = getAdminSettings();
 
-            // Get Gold Price
-            $gold_data['gold_price_24k_1gm_rtd'] = (isset($admin_settings['gold_price_24k_1gm_mbo_rtd']) && !empty($admin_settings['gold_price_24k_1gm_mbo_rtd'])) ? $admin_settings['gold_price_24k_1gm_mbo_rtd'] : 0;
             $gold_data['sales_wastage_rtd'] = (isset($admin_settings['sales_wastage_rtd']) && !empty($admin_settings['sales_wastage_rtd'])) ? unserialize($admin_settings['sales_wastage_rtd']) : [];
             $gold_data['sales_wastage_discount_rtd'] = (isset($admin_settings['sales_wastage_discount_rtd']) && !empty($admin_settings['sales_wastage_discount_rtd'])) ? unserialize($admin_settings['sales_wastage_discount_rtd']) : [];
-            $data['gold_price'] = $gold_data;
+            $gold_data['price_24k'] = (isset($admin_settings['price_24k']) && !empty($admin_settings['price_24k'])) ? unserialize($admin_settings['price_24k']) : [];
+            $gold_data['show_estimate'] = (isset($admin_settings['show_estimate']) && !empty($admin_settings['show_estimate'])) ? unserialize($admin_settings['show_estimate']) : [];
 
-            // Get Silver Price
-            $silver_data['sales_price_rtd_silver'] = (isset($admin_settings['sales_price_rtd_silver']) && !empty($admin_settings['sales_price_rtd_silver'])) ? unserialize($admin_settings['sales_price_rtd_silver']) : [];
-            $silver_data['sales_discount_rtd_silver'] = (isset($admin_settings['sales_discount_rtd_silver']) && !empty($admin_settings['sales_discount_rtd_silver'])) ? unserialize($admin_settings['sales_discount_rtd_silver']) : [];
-            $data['silver_price'] = $silver_data;
+            return $this->sendApiResponse(true, 0, 'Price has been Retrived.', $gold_data);
 
-            return $this->sendApiResponse(true, 0, 'Price has been Retrived.', $data);
-           
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }

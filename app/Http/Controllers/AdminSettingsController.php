@@ -149,7 +149,7 @@ class AdminSettingsController extends Controller
 
     }
 
-    public function GetCategoryReadyToDispatch()
+    public function GetSubItemReadyToDispatch()
     {
         // Initialize curl
         $curl = curl_init();
@@ -215,7 +215,8 @@ class AdminSettingsController extends Controller
         curl_close($curl);
 
         $data = json_decode($response);
-        return $data->Filters->ItemGroups ?? [];
+        //return $data->Filters->ItemGroups ?? [];
+        return $data->Filters->SubItems ?? [];
     }
 
     // ready to dispatch price calculator
@@ -223,15 +224,15 @@ class AdminSettingsController extends Controller
     {
         if(Auth::guard('admin')->user()->can('price_calculate.make_by_order_ready_to_dispatch')){
             $settings = getAdminSettings();
-            $categories = $this->GetCategoryReadyToDispatch();
-            $silver_categories = $this->silverCategories(['company_id' => 3]);
-            return view("admin.settings.price_calculate.make_by_order_ready_to_dispatch",compact(['settings', 'categories', 'silver_categories']));
+            $subItems = $this->GetSubItemReadyToDispatch();
+
+            return view("admin.settings.price_calculate.make_by_order_ready_to_dispatch",compact(['settings', 'subItems']));
         }else{
             return redirect()->route('admin.dashboard')->with('error','You have no rights for this action!');
         }
     }
 
-    public function silverCategories($filter) 
+    public function silverCategories($filter)
     {
         // Initialize curl
         $curl = curl_init();
@@ -305,14 +306,14 @@ class AdminSettingsController extends Controller
     {
         try{
             $settings = $request->settings;
-
             // For Gold
             $settings['sales_wastage_rtd'] = (isset($settings['sales_wastage_rtd'])) ? serialize($settings['sales_wastage_rtd']) : '';
+
+            $settings['price_24k'] = (isset($settings['price_24k'])) ? serialize($settings['price_24k']) : '';
+
             $settings['sales_wastage_discount_rtd'] = (isset($settings['sales_wastage_discount_rtd'])) ? serialize($settings['sales_wastage_discount_rtd']) : '';
 
-            // For Silver
-            $settings['sales_price_rtd_silver'] = (isset($settings['sales_price_rtd_silver'])) ? serialize($settings['sales_price_rtd_silver']) : '';
-            $settings['sales_discount_rtd_silver'] = (isset($settings['sales_discount_rtd_silver'])) ? serialize($settings['sales_discount_rtd_silver']) : '';
+            $settings['show_estimate'] = (isset($settings['show_estimate'])) ? serialize($settings['show_estimate']) : '';
 
             if(Auth::guard('admin')->user()->can('price-calculator.update-ready-to-dispatch')){
                 if(count($settings) > 0){
@@ -322,6 +323,7 @@ class AdminSettingsController extends Controller
                         $setting_id = (isset($is_exists['id']) && !empty($is_exists['id'])) ? $is_exists['id'] : '';
 
                         if(!empty($setting_id) || $setting_id != ''){
+
                             $update_settings = AdminSetting::find($setting_id);
                             $update_settings->value = $setting;
                             $update_settings->update();
