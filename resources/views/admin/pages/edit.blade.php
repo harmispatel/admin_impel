@@ -42,8 +42,15 @@
                             @endif
                         </div>
                         @if(isset($page_details->image) && !empty($page_details->image) && file_exists('public/images/uploads/pages/'.$page_details->image))
-                        <div class="form-group mb-3 text-center">
-                            <img src="{{ asset('public/images/uploads/pages/'.$page_details->image) }}" alt="Page Image" width="300">
+                        <div class="row justify-content-center">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3 text-center position-relative image_del">
+                                    <img src="{{ asset('public/images/uploads/pages/'.$page_details->image) }}" class="w-100" alt="Page Image">
+                                    <a onclick="deletePageImage('{{ encrypt($page_details->id) }}')" id="delete_image" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                         @endif
                         <div class="form-group mb-3">
@@ -150,6 +157,43 @@
             , 'MathType'
         ]
     });
+
+
+// Function for Delete Page
+function deletePageImage(id)
+{
+    swal({
+        title: "Are you sure You want to Delete It ?",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+    })
+    .then((willDeleteRole) => {
+        if (willDeleteRole) {
+            $.ajax({
+                type: "POST",
+                url: "{{ route('pages.destroy') }}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    'id': id,
+                },
+                dataType: 'JSON',
+                success: function(response) {
+                    if (response.success == 1) {
+                        swal(response.message, "", "success");
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1200);
+                    } else {
+                        swal(response.message, "", "error");
+                    }
+                }
+            });
+        } else {
+            swal("Cancelled", "", "error");
+        }
+    });
+}
 
 </script>
 

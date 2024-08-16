@@ -1274,7 +1274,7 @@
 
                                                         <div class="col-md-2">
                                                             <label class="form-check">
-                                                                <input class="form-check-input" type="checkbox" value="{{ (isset($permissions['ready.orders.complete'])) ? $permissions['ready.'] : '' }}" name="permissions[]">
+                                                                <input class="form-check-input" type="checkbox" value="{{ (isset($permissions['ready.orders.complete'])) ? $permissions['ready.orders.complete'] : '' }}" name="permissions[]">
 
                                                                 <span class="form-check-label">Complete</span>
                                                             </label>

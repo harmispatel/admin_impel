@@ -442,6 +442,7 @@ Route::group(['prefix' => 'admin'], function ()
 
             Route::post('pages/update', 'update')->name('pages.update');
 
+            Route::post('pages/image/destroy','destroy')->name('pages.destroy');
         });
 
 

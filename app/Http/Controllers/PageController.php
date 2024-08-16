@@ -69,6 +69,32 @@ class PageController extends Controller
         }
     }
 
+
+    public function destroy(Request $request)
+    {
+        try{
+            $page = Page::find(decrypt($request->id));
+            $page_image = isset($page->image) ? $page->image : '';
+
+            if (!empty($page_image) && file_exists('public/images/uploads/pages/'.$page_image)) {
+                unlink('public/images/uploads/pages/'.$page_image);
+                $page->image = null;
+                $page->save();
+            }
+
+            return response()->json([
+                'success' => 1,
+                'message' => "Image has been Deleted.",
+
+            ]);
+        }catch (\Throwable $th){
+            return response()->json([
+                'success' => 0,
+                'message' => "Oops, Something went wrong!",
+            ]);
+        }
+    }
+
     // Show the form for creating a new resource.
     public function create()
     {
