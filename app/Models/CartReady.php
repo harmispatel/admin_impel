@@ -12,9 +12,4 @@ class CartReady extends Model
     protected $table = "cart_readies";
 
     protected $guarded = [];
-
-    public function designs()
-    {
-        return $this->hasOne(Design::class, 'id', 'design_id');
-    }
 }

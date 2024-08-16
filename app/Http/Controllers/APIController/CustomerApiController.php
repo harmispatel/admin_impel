@@ -2000,7 +2000,6 @@ class CustomerApiController extends Controller
             $input['gross_weight'] = $request->gross_weight;
             $input['net_weight'] = $request->net_weight;
             $input['quantity'] = (isset($request->quantity)) ? $request->quantity : 1;
-            $input['design_id'] = $request->design_id;
             $input['barcode'] = $request->barcode;
             $input['gold_id'] = $request->gold_id;
             $input['item_group_id'] = $request->item_group_id;
@@ -2011,7 +2010,7 @@ class CustomerApiController extends Controller
             $input['making_charge'] = $request->making_charge;
             $input['making_charge_discount'] = $request->making_charge_discount;
             $input['total_amount'] = $request->total_amount;
-            $input['company_id'] = $request->total_amount;
+            $input['company_id'] = $request->company_id;
 
             $phone = $request->phone;
             $user = User::where('phone', $phone)->first();
