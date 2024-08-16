@@ -32,11 +32,9 @@ class CartReadyListResource extends JsonResource
             $data['tag_no'] = (isset($cart->tag_no)) ? $cart->tag_no : '';
             $data['group_name'] = (isset($cart->group_name)) ? $cart->group_name : '';
             $data['name'] =  (isset($cart->name)) ? $cart->name : '';
-            $data['price'] = isset($cart->price) ? $cart->price : '';
             $data['size'] = isset($cart->size) ? $cart->size : '';
             $data['gross_weight'] = isset($cart->gross_weight) ? $cart->gross_weight : '';
             $data['net_weight'] = isset($cart->net_weight) ? $cart->net_weight : '';
-            $data['gold_price'] = isset($cart->gold_price) ? $cart->gold_price : '';
             $data['barcode'] = isset($cart->barcode) ? $cart->barcode : '';
             $data['gold_id'] = isset($cart->gold_id) ? $cart->gold_id : '';
 

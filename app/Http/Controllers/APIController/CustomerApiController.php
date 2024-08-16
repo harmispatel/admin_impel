@@ -1984,7 +1984,6 @@ class CustomerApiController extends Controller
         try {
             $validatedData = Validator::make($request->all(), [
                 'phone' => 'required|exists:users,phone',
-                'price' => 'required'
             ]);
 
             if ($validatedData->fails()) {
@@ -1994,27 +1993,16 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            if ($request->price < 0) {
-                // if($request->price <= 0)
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Price is not Valid'
-                ]);
-            }
-
             $input['tag_no'] = $request->tag_no;
             $input['group_name'] = $request->group_name;
             $input['name'] = $request->name;
-            $input['price'] = $request->price;
             $input['size'] = $request->size;
             $input['gross_weight'] = $request->gross_weight;
             $input['net_weight'] = $request->net_weight;
             $input['quantity'] = (isset($request->quantity)) ? $request->quantity : 1;
             $input['design_id'] = $request->design_id;
-            $input['gold_price'] = $request->gold_price;
             $input['barcode'] = $request->barcode;
-            $input['gold_id'] = @$request->gold_id;
-
+            $input['gold_id'] = $request->gold_id;
             $input['group_item_id'] = $request->group_item_id;
             $input['item_id'] = $request->item_id;
             $input['sub_item_id'] = $request->sub_item_id;
@@ -2023,6 +2011,7 @@ class CustomerApiController extends Controller
             $input['making_charge'] = $request->making_charge;
             $input['making_charge_discount'] = $request->making_charge_discount;
             $input['total_amount'] = $request->total_amount;
+            $input['company_id'] = $request->total_amount;
 
             $phone = $request->phone;
             $user = User::where('phone', $phone)->first();

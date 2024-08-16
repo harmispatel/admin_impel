@@ -11,23 +11,7 @@ class CartReady extends Model
 
     protected $table = "cart_readies";
 
-    protected $fillable = [
-        'user_id',
-        'tag_no',
-        'group_name',
-        'name',
-        'quantity',
-        'price',
-        'size',
-        'gross_weight',
-        'net_weight',
-        'gold_price',
-        'design_id',
-        'barcode',
-        'gold_id'
-    ];
-
-
+    protected $guarded = [];
 
     public function designs()
     {
