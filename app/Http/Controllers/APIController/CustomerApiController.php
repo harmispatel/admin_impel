@@ -2003,7 +2003,7 @@ class CustomerApiController extends Controller
             $input['design_id'] = $request->design_id;
             $input['barcode'] = $request->barcode;
             $input['gold_id'] = $request->gold_id;
-            $input['group_item_id'] = $request->group_item_id;
+            $input['item_group_id'] = $request->item_group_id;
             $input['item_id'] = $request->item_id;
             $input['sub_item_id'] = $request->sub_item_id;
             $input['style_id'] = $request->style_id;
