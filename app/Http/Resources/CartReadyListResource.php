@@ -23,8 +23,7 @@ class CartReadyListResource extends JsonResource
 
         foreach($carts as $cart){
 
-           $readyCategory = ReadyCategory::where('category_name',$cart->group_name)->first();
-           $category_id = $readyCategory->category_id;
+           $category_id = $cart->item_group_id;
 
             $data['id'] = (isset($cart->id)) ? $cart->id : '';
             $data['design_id'] = (isset($cart->design_id)) ? $cart->design_id : '';
@@ -41,10 +40,16 @@ class CartReadyListResource extends JsonResource
             $data['barcode'] = isset($cart->barcode) ? $cart->barcode : '';
             $data['gold_id'] = isset($cart->gold_id) ? $cart->gold_id : '';
 
+            $data['group_item_id'] = isset($cart->group_item_id) ? $cart->group_item_id : '';
+            $data['item_id'] = isset($cart->item_id) ? $cart->item_id : '';
+            $data['sub_item_id'] = isset($cart->item_id) ? $cart->item_id : '';
+            $data['style_id'] = isset($cart->style_id) ? $cart->style_id : '';
+            $data['metal_value'] = isset($cart->metal_value) ? $cart->metal_value : '';
+            $data['making_charge'] = isset($cart->making_charge) ? $cart->making_charge : '';
+            $data['total_amount'] = isset($cart->total_amount) ? $cart->total_amount : '';
+            $data['making_charge_discount'] = isset($cart->making_charge_discount) ? $cart->making_charge_discount : '';
 
             $sales_wastage_of_category = isset($sales_wastage[$category_id]) ? $sales_wastage[$category_id] : 0;
-
-
 
             $data['image'] = isset($cart->barcode) ?  $cart->barcode : '' ;
             // $data['percentage'] = isset($cart->designs->percentage) ? $cart->designs->percentage : '';

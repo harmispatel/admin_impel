@@ -2015,6 +2015,15 @@ class CustomerApiController extends Controller
             $input['barcode'] = $request->barcode;
             $input['gold_id'] = @$request->gold_id;
 
+            $input['group_item_id'] = $request->group_item_id;
+            $input['item_id'] = $request->item_id;
+            $input['sub_item_id'] = $request->sub_item_id;
+            $input['style_id'] = $request->style_id;
+            $input['metal_value'] = $request->metal_value;
+            $input['making_charge'] = $request->making_charge;
+            $input['making_charge_discount'] = $request->making_charge_discount;
+            $input['total_amount'] = $request->total_amount;
+
             $phone = $request->phone;
             $user = User::where('phone', $phone)->first();
             $input['user_id'] = $user->id;
@@ -2066,6 +2075,7 @@ class CustomerApiController extends Controller
                 return $this->sendApiResponse(false, 0, 'The Phone Filed is Required!', []);
             }
         } catch (\Throwable $th) {
+            dd($th);
             return $this->sendApiResponse(false, 0, 'Failed to Cart List!', []);
         }
     }
