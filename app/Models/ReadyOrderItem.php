@@ -9,6 +9,8 @@ class ReadyOrderItem extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
     public function design()
     {
         return $this->hasOne(Design::class, 'id', 'design_id');

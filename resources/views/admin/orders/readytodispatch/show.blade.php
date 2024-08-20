@@ -28,26 +28,22 @@
                         <div class="col-md-12 text-end">
 
                             @can('ready.orders.accept')
-                            @if(isset($order->order_status) && $order->order_status == 'pending')
-                            <a onclick="processOrder('accepted', {{ $order->id }})" class="mb-2 btn btn-sm btn-info text-white"><strong>ACCEPT</strong> <i class="fa-solid fa-check-circle"></i></a>
-                            @endif
+                                @if(isset($order->order_status) && $order->order_status == 'pending')
+                                    <a onclick="processOrder('accepted', {{ $order->id }})" class="mb-2 btn btn-sm btn-info text-white"><strong>ACCEPT</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                @endif
                             @endcan
 
                             @can('orders.process')
-                            @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted'))
-                            <a onclick="processOrder('processing', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-primary"><strong>PROCESS</strong> <i class="fa-solid fa-check-circle"></i></a>
-                            @endif
+                                @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted'))
+                                    <a onclick="processOrder('processing', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-primary"><strong>PROCESS</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                @endif
                             @endcan
 
                             @can('ready.orders.complete')
-                            @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted' || $order->order_status == 'processing'))
-                            <a onclick="processOrder('completed', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>COMPLETE</strong> <i class="fa-solid fa-check-circle"></i></a>
-                            @endif
-                            @endcan
-
-                            <!-- <a class="ms-1 mb-2 btn btn-sm btn-primary" href="{{ route('orders.print', encrypt($order->id)) }}" target="_blank">Print <i class="fa fa-print"></i></a>
-
-                                <a onclick="share()" class="btn btn-sm btn-primary ms-1 mb-2">Share <i class="bi bi-share"></i></a> -->
+                                @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted' || $order->order_status == 'processing'))
+                                    <a onclick="processOrder('completed', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>COMPLETE</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                @endif
+                            @endcan                            
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -70,13 +66,27 @@
                                                         <div style="width: 47%"><strong>Order Status : </strong></div>
                                                         <div style="width: 53%">
                                                             @if($order->order_status == 'pending')
-                                                            <span class="badge bg-warning" style="font-size: 15px;">Pending.</span>
+                                                            <span class="badge bg-warning" style="font-size: 13px;">Pending.</span>
                                                             @elseif($order->order_status == 'accepted')
-                                                            <span class="badge bg-info" style="font-size: 15px;">Accepted.</span>
+                                                            <span class="badge bg-info" style="font-size: 13px;">Accepted.</span>
                                                             @elseif($order->order_status == 'processing')
-                                                            <span class="badge bg-primary" style="font-size: 15px;">Processing.</span>
+                                                            <span class="badge bg-primary" style="font-size: 13px;">Processing.</span>
                                                             @elseif($order->order_status == 'completed')
-                                                            <span class="badge bg-success" style="font-size: 15px;">Completed.</span>
+                                                            <span class="badge bg-success" style="font-size: 13px;">Completed.</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div style="width: 47%"><strong>Payment Status : </strong></div>
+                                                        <div style="width: 53%">
+                                                            @if($order->payment_status == 1)
+                                                                <span class="badge bg-success" style="font-size: 13px;">Paid.</span>
+                                                            @else
+                                                                <span class="badge bg-danger" style="font-size: 13px;">Unpaid.</span>                       
                                                             @endif
                                                         </div>
                                                     </div>
@@ -189,39 +199,38 @@
                                                 <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
                                                     <th scope="col">Image</th>
                                                     <th scope="col">Name</th>
-                                                    <th scope="col">Code</th>
                                                     <th scope="col">Qty.</th>
-                                                    <th scope="col">Gold Type</th>
-                                                    <th scope="col">Gold Color</th>
                                                     <th scope="col">Net Weight</th>
-                                                    <th scope="col">Metal Price</th>
-                                                    <th scope="col">Total</th>
+                                                    <th scope="col">Metal Value</th>
+                                                    <th scope="col">Making Charge</th>
+                                                    <th scope="col">Total Amount</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="text-gray-600">
                                                 @if(isset($order->order_items) && count($order->order_items) > 0)
-                                                @foreach ($order->order_items as $order_item)
-                                                @php
-                                                $design_code = isset($order_item->design['code']) ? $order_item->design['code'] : '';
-                                                @endphp
-                                                <tr>
-                                                    <td>
-                                                        @if(isset($order_item['barcode']) && !empty($order_item['barcode']))
-                                                        <img src="{{ url('https://api.indianjewelcast.com/TagImage/' . $order_item['barcode'] . '.jpg') }}" style="width: 65px; height: 65px; border-radius: 5px; box-shadow: 3px 3px 3px #ccc; border: 2px solid #575757;" onerror="this.onerror=null; this.src='{{ asset('public/images/default_images/not-found/no_img1.jpg') }}';" />
-                                                        @else
-                                                        <img src="{{ asset('public/images/default_images/not-found/no_img1.jpg') }}" style="width: 65px; height: 65px; border-radius: 5px; box-shadow: 3px 3px 3px #ccc; border: 2px solid #575757;" />
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $order_item['design_name'] }}</td>
-                                                    <td>{{ (isset($design_code)) ? $design_code : '-' }}</td>
-                                                    <td>{{ $order_item['quantity'] }}</td>
-                                                    <td>{{ $order_item['gold_type'] }}</td>
-                                                    <td>{{ $order_item['gold_color'] }}</td>
-                                                    <td>{{ $order_item['net_weight'] }} gm.</td>
-                                                    <td>₹ {{ $order_item['item_sub_total'] }}</td>
-                                                    <td>₹ {{ $order_item['item_total'] }}</td>
-                                                </tr>
-                                                @endforeach
+                                                    @foreach ($order->order_items as $order_item)
+                                                        <tr>
+                                                            <td>
+                                                                @if(isset($order_item['barcode']) && !empty($order_item['barcode']))
+                                                                    <img src="{{ url('https://api.indianjewelcast.com/TagImage/' . $order_item['barcode'] . '.jpg') }}" style="width: 65px; height: 65px; border-radius: 5px; box-shadow: 3px 3px 3px #ccc; border: 2px solid #575757;" onerror="this.onerror=null; this.src='{{ asset('public/images/default_images/not-found/no_img1.jpg') }}';" />
+                                                                @else
+                                                                    <img src="{{ asset('public/images/default_images/not-found/no_img1.jpg') }}" style="width: 65px; height: 65px; border-radius: 5px; box-shadow: 3px 3px 3px #ccc; border: 2px solid #575757;" />
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $order_item['design_name'] }}</td>
+                                                            <td>{{ $order_item['quantity'] }}</td>
+                                                            <td>{{ $order_item['net_weight'] }} gm.</td>
+                                                            <td>₹{{ round($order_item['metal_value']) }}</td>
+                                                            <td>
+                                                                @if(isset($order_item['making_charge_discount']) && !empty($order_item['making_charge_discount']) && $order_item['making_charge_discount'] > 0)
+                                                                    ₹{{ round($order_item['making_charge_discount']) }}
+                                                                @else
+                                                                    ₹{{ round($order_item['making_charge']) }}
+                                                                @endif
+                                                            </td>
+                                                            <td>₹{{ round($order_item['item_total']) }}</td>
+                                                        </tr>
+                                                    @endforeach
                                                 @endif
                                             </tbody>
                                         </table>
@@ -238,30 +247,28 @@
                                         <table class="table">
                                             <tbody>
                                                 <tr>
-                                                    <th scope="col">Metal Price : </th>
-                                                    <td class="text-end">₹ {{ $order->sub_total  }}</td>
+                                                    <th scope="col">SUB TOTAL: </th>
+                                                    <td class="text-end">₹{{ round($order->sub_total) }}</td>
                                                 </tr>
-                                                <!-- <tr>
-                                                        <th scope="col">Charges : </th>
-                                                        <td class="text-end">₹ {{ $order->charges  }}</td>
-                                                    </tr> -->
                                                 <tr>
-                                                    <th scope="col">GST (3%) : </th>
-                                                    <td class="text-end">₹ {{ $order->gst_amount  }}</td>
+                                                    <th scope="col">GST (3%): </th>
+                                                    <td class="text-end">₹{{ round($order->gst_amount) }}</td>
                                                 </tr>
+
                                                 @if(isset($order->dealer_code) && !empty($order->dealer_code) && isset($order->dealer_discount_type) && !empty($order->dealer_discount_type) && isset($order->dealer_discount_value) && !empty($order->dealer_discount_value))
-                                                <tr class="text-success">
-                                                    <th>Dealer Discount <br> <span>({{ $order->dealer_code }}) {{ ($order->dealer_discount_type == 'percentage') ? '('.$order->dealer_discount_value.'%)' : '' }}</span></th>
-                                                    @if($order->dealer_discount_type == 'percentage')
-                                                    <td class="text-end">- ₹ {{ ($order->charges * $order->dealer_discount_value) / 100 }}</td>
-                                                    @else
-                                                    <td class="text-end">- ₹ {{ $order->dealer_discount_value }}</td>
-                                                    @endif
-                                                </tr>
+                                                    <tr class="text-success">
+                                                        <th>Dealer Discount <br> <span>({{ $order->dealer_code }}) {{ ($order->dealer_discount_type == 'percentage') ? '('.$order->dealer_discount_value.'%)' : '' }}</span></th>
+                                                        @if($order->dealer_discount_type == 'percentage')
+                                                            <td class="text-end">- ₹{{ round(($order->charges * $order->dealer_discount_value) / 100) }}</td>
+                                                        @else
+                                                            <td class="text-end">- ₹{{ round($order->dealer_discount_value) }}</td>
+                                                        @endif
+                                                    </tr>
                                                 @endif
+
                                                 <tr>
-                                                    <th scope="col">Total (Approx.) : </th>
-                                                    <td class="text-end"><strong>₹ {{ $order->total }}</strong></td>
+                                                    <th scope="col">TOTAL: </th>
+                                                    <td class="text-end"><strong>₹{{ round($order->total) }}</strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>

@@ -30,6 +30,7 @@
                                         <th>Customer</th>
                                         <th>Phone No.</th>
                                         <th>Order Status</th>
+                                        <th>Payment Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -73,6 +74,12 @@
                     {
                         data: 'order_status',
                         name: 'order_status',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'payment_status',
+                        name: 'payment_status',
                         orderable: false,
                         searchable: false
                     },

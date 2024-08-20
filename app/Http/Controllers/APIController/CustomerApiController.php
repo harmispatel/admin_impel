@@ -1984,6 +1984,12 @@ class CustomerApiController extends Controller
         try {
             $validatedData = Validator::make($request->all(), [
                 'phone' => 'required|exists:users,phone',
+                'company_id' => 'required',
+                'item_group_id' => 'required',
+                'item_id' => 'required',
+                'sub_item_id' => 'required',
+                'style_id' => 'required',
+                'metal_value' => 'required',
             ]);
 
             if ($validatedData->fails()) {
@@ -1993,48 +1999,39 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $input['tag_no'] = $request->tag_no;
-            $input['group_name'] = $request->group_name;
-            $input['name'] = $request->name;
-            $input['size'] = $request->size;
-            $input['gross_weight'] = $request->gross_weight;
-            $input['net_weight'] = $request->net_weight;
-            $input['quantity'] = (isset($request->quantity)) ? $request->quantity : 1;
-            $input['barcode'] = $request->barcode;
-            $input['gold_id'] = $request->gold_id;
-            $input['item_group_id'] = $request->item_group_id;
-            $input['item_id'] = $request->item_id;
-            $input['sub_item_id'] = $request->sub_item_id;
-            $input['style_id'] = $request->style_id;
-            $input['metal_value'] = $request->metal_value;
-            $input['making_charge'] = $request->making_charge;
-            $input['making_charge_discount'] = $request->making_charge_discount;
-            $input['total_amount'] = $request->total_amount;
-            $input['company_id'] = $request->company_id;
+            $user =  User::where('phone', $request->phone)->first();
 
-            $phone = $request->phone;
-            $user = User::where('phone', $phone)->first();
-            $input['user_id'] = $user->id;
+            $input = [
+                'user_id' => $user->id,
+                'company_id' => $request->company_id,
+                'item_group_id' => $request->item_group_id,
+                'item_id' => $request->item_id,
+                'sub_item_id' => $request->sub_item_id,
+                'style_id' => $request->style_id,
+                'barcode' => $request->barcode ?? "",
+                'tag_no' => $request->tag_no ?? "",
+                'group_name' => $request->group_name ?? "",
+                'name' => $request->name ?? "",
+                'quantity'=> $request->quantity ?? 1,
+                'size'=> $request->size ?? "",
+                'gross_weight'=> $request->gross_weight ?? "",
+                'net_weight'=> $request->net_weight ?? "",
+                'metal_value'=> $request->metal_value ?? 0,
+                'making_charge'=> $request->making_charge ?? 0,
+                'making_charge_discount'=> $request->making_charge_discount ?? 0,
+                'total_amount'=> $request->total_amount ?? 0,
+            ];
 
-            if ($user) {
-                $is_exists = CartReady::where('user_id', $user->id)
-                    ->where('tag_no', $request->tag_no)
-                    ->where('group_name', $request->group_name)->first();
+            $is_exists = CartReady::where('user_id', $user->id)->where('tag_no', $request->tag_no)->where('group_name', $request->group_name)->first();
 
-                if (isset($is_exists)) {
-                    return $this->sendApiResponse(false, 0, 'Design has already exists in Your Cart');
-                } else {
-                    $data = CartReady::create($input);
-                    return $this->sendApiResponse(true, 0, 'Design has been Added to Your Cart.', $data);
-                }
+            if (isset($is_exists->id) && !empty($is_exists->id)) {
+                return $this->sendApiResponse(false, 0, 'Design has already exists in Your Cart');
             } else {
-                return $this->sendApiResponse(false, 0, 'User Not Found');
+                $cartData = CartReady::create($input);
+                return $this->sendApiResponse(true, 0, 'Design has been Added to Your Cart.', $cartData);
             }
         } catch (\Throwable $th) {
-            // throw $th;
-            return response()->json([
-                'error' => throw $th,
-            ]);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!');
         }
     }
 
@@ -2042,29 +2039,25 @@ class CustomerApiController extends Controller
     public function readyCartList(Request $request)
     {
         try {
+            $validatedData = Validator::make($request->all(), [
+                'phone' => 'required|exists:users,phone',
+            ]);
 
-            if (isset($request->phone) && !empty($request->phone)) {
-
-                $user = User::where('phone', $request->phone)->first();
-
-                if (isset($user->id)) {
-                    $cart_data['carts'] =  CartReady::where('user_id', $user->id)->get();
-
-                    // $quantity = (int) $cart_data['carts'][0]->quantity;
-
-                    $cart_data['total_qty'] =  CartReady::where('user_id', $user->id)->sum('quantity');
-                    $data = new CartReadyListResource($cart_data);
-
-                    return $this->sendApiResponse(true, 0, 'Cart List SuccessFully', $data);
-                } else {
-                    return $this->sendApiResponse(false, 0, 'User not Found!', []);
-                }
-            } else {
-                return $this->sendApiResponse(false, 0, 'The Phone Filed is Required!', []);
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
             }
+
+            $user = User::where('phone', $request->phone)->first();
+
+            $cart_data['carts'] =  CartReady::where('user_id', $user->id)->get();
+            $cart_data['total_qty'] =  CartReady::where('user_id', $user->id)->sum('quantity');
+            $data = new CartReadyListResource($cart_data);
+            return $this->sendApiResponse(true, 0, 'Cart Items Fetched.', $data);
         } catch (\Throwable $th) {
-            dd($th);
-            return $this->sendApiResponse(false, 0, 'Failed to Cart List!', []);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
     }
 
@@ -2072,17 +2065,23 @@ class CustomerApiController extends Controller
     public function readyCartRemove(Request $request)
     {
         try {
-            $cart_id = $request->cart_id;
-            $cart = CartReady::where('id', $cart_id)->first();
-            if ($cart) {
-                $cart->delete();
-                $data['total_quantity'] =  CartReady::where('user_id', $cart['user_id'])->sum('quantity');
-                return $this->sendApiResponse(true, 0, 'Remove Cart SuccessFully', $data);
-            } else {
-                return $this->sendApiResponse(false, 0, 'Failed to Cart List!', (object)[]);
+            $validatedData = Validator::make($request->all(), [
+                'cart_id' => 'required|exists:cart_readies,id',
+            ]);
+
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
             }
+            
+            CartReady::find($request->cart_id)->delete();
+
+            return $this->sendApiResponse(true, 0, 'Item has been Removed.', []);
+
         } catch (\Throwable $th) {
-            return $this->sendApiResponse(false, 0, 'Failed to Cart List!', (object)[]);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
     }
 
@@ -2090,157 +2089,207 @@ class CustomerApiController extends Controller
     public function readyPurchaseOrder(Request $request)
     {
         try {
-            $user_id = $request->user_id;
-            $user = User::find($user_id);
-            $cart_items = (isset($request->cart_items)) ? $request->cart_items : [];
-            $sub_total = (isset($request->sub_total)) ? $request->sub_total : 0;
-            $gst_amount = (isset($request->gst_amount)) ? $request->gst_amount : 0;
-            $total = (isset($request->total)) ? $request->total : 0;
+            $validatedData = Validator::make($request->all(), [
+                'user_id' => 'required|exists:users,id',
+                'payment_method' => 'required|in:cash,phonepe',
+            ]);
 
-            if ($request->payment_method == "cash") {
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
+            }
 
-                $admin_settings = getAdminSettings();
-                $gold_price_24k_1gm_mbo = (isset($admin_settings['gold_price_24k_1gm_mbo']) && !empty($admin_settings['gold_price_24k_1gm_mbo'])) ? $admin_settings['gold_price_24k_1gm_mbo'] : 0;
+            $cart_items = $request->cart_items ?? [];
+            $gst_amount = $request->gst_amount ?? 0;
+            $sub_total = $request->sub_total ?? 0;
+            $total = $request->total ?? 0;
+            $charges = $request->charges ?? 0;
+            $dealer_code = $request->dealer_code ?? "";
+            $dealer_discount_type = $request->dealer_discount_type ?? "";
+            $dealer_discount_value = $request->dealer_discount_value ?? "";
 
-                if (isset($user->id) && count($cart_items) > 0) {
+            $user = User::find($request->user_id);
+            $dealer = User::where('dealer_code', $dealer_code)->first();
+            $commission_type = $dealer->commission_type ?? "";
+            $commission_value = $dealer->commission_value ?? 0;
+            $commission_days = $dealer->commission_days ?? 10;
+            $commission_date = Carbon::now()->addDays($commission_days);
 
-                    $order = new ReadyOrder();
-                    $order->user_id = $user_id;
-                    $order->order_status = "pending";
-                    $order->name = $user->name;
-                    $order->email = $user->email;
-                    $order->phone = $user->phone;
-                    $order->address = ($user->address_same_as_company == 1) ? $user->address : $user->shipping_address;
-                    $order->city = ($user->address_same_as_company == 1) ? $user->city : $user->shipping_city;
-                    $order->state = ($user->address_same_as_company == 1) ? $user->state : $user->shipping_state;
-                    $order->pincode = ($user->address_same_as_company == 1) ? $user->pincode : $user->shipping_pincode;
-                    $order->gold_price = $gold_price_24k_1gm_mbo;
-                    $order->item_sub_total = $sub_total;
-                    $order->total = $total;
-                    $order->payment_method = 'cash';
-                    $order->gst_amount = $gst_amount;
-                    $order->save();
+            if(count($cart_items) > 0){
+                if ($request->payment_method == "cash") {
 
-                    if ($order->id) {
-                        $product_ids = [];
+                    // Insert Order Details
+                    $order_input = [
+                        'user_id' => $user->id ?? "",
+                        'dealer_id' => $dealer->id ?? NULL,
+                        'order_status' => "pending",
+                        'name' => $user->name ?? "",
+                        'email' => $user->email ?? "",
+                        'phone' => $user->phone ?? "",
+                        'address' => ($user->address_same_as_company == 1) ? $user->address : $user->shipping_address,
+                        'city' => ($user->address_same_as_company == 1) ? $user->city : $user->shipping_city,
+                        'state' => ($user->address_same_as_company == 1) ? $user->state : $user->shipping_state,
+                        'pincode' => ($user->address_same_as_company == 1) ? $user->pincode : $user->shipping_pincode,
+                        'dealer_code' => $dealer_code,
+                        'dealer_discount_type' => $dealer_discount_type,
+                        'dealer_discount_value' => $dealer_discount_value,
+                        'gst_amount' => $gst_amount,
+                        'charges' => $charges,
+                        'sub_total' => $sub_total,
+                        'total' => $total,
+                        'payment_status' => 0,
+                        'payment_method' => 'cash',
+                    ];
+                    $new_order = ReadyOrder::create($order_input);
 
+                    // Insert Order Items
+                    if(isset($new_order->id)){
                         foreach ($cart_items as $cart_item) {
                             $cart_item = CartReady::where('id', $cart_item)->first();
-                            if ($cart_item) {
-                                $item_quantity = $cart_item->quantity;
-                                $gross_weight = $cart_item->gross_weight;
-                                $net_weight = $cart_item->net_weight;
-                                $item_sub_total = $cart_item->total_amount;
-                                $item_total = $item_sub_total * $item_quantity;
+                            $item_quantity = $cart_item->quantity ?? 1;
 
-                                $order_item = new ReadyOrderItem();
-                                $order_item->user_id = $user_id;
-                                $order_item->order_id = $order->id;
-                                $order_item->design_name =  $cart_item->name;
-                                $order_item->quantity =  $item_quantity;
-                                $order_item->gross_weight =  $gross_weight;
-                                $order_item->net_weight =  $net_weight;
-                                $order_item->item_sub_total = $item_sub_total;
-                                $order_item->item_total = $item_total;
-                                $order_item->barcode = $cart_item->barcode;
-                                $order_item->save();
-                            } else {
-                                return $this->sendApiResponse(false, 0, 'Item Not Existing In Cart!', (object)[]);
-                            }
+                            $order_item_input = [
+                                'user_id' => $user->id ?? "",
+                                'dealer_id' => $dealer->id ?? NULL,
+                                'order_id' => $new_order->id,
+                                'design_name' => $cart_item->name ?? "",
+                                'quantity' => $item_quantity,
+                                'barcode' => $cart_item->barcode ?? "",
+                                'gross_weight' => $cart_item->gross_weight ?? "",
+                                'net_weight' => $cart_item->net_weight ?? "",
+                                'metal_value' => $cart_item->metal_value ?? 0,
+                                'making_charge' => $cart_item->making_charge ?? 0,
+                                'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
+                                'item_sub_total' => $cart_item->total_amount ?? 0,
+                                'item_total' => $cart_item->total_amount * $item_quantity,
+                            ];
+
+                            ReadyOrderItem::create($order_item_input);
                         }
 
-                        // Delete Items from Cart
-                        CartReady::whereIn('id', $cart_items)->delete();
-                    } else {
-                        return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
-                    }
-                    return response()->json([
-                        'status' => true,
-                        'message' => 'Order has been Placed SuccessFully.',
-                        'data'    => $order->id,
-                    ], Response::HTTP_OK);
-                }
-            } else {
-                $transaction_id = (isset($request->transaction_id)) ? $request->transaction_id : "";
-                $admin_settings = getAdminSettings();
-                $gold_price_24k_1gm_mbo = (isset($admin_settings['gold_price_24k_1gm_mbo']) && !empty($admin_settings['gold_price_24k_1gm_mbo'])) ? $admin_settings['gold_price_24k_1gm_mbo'] : 0;
+                        // Update Order
+                        $update_order = ReadyOrder::find($new_order->id);
 
-                if (!empty($transaction_id)) {
-                    $transaction = $this->checkPhonepePaymentStatus($transaction_id);
-
-                    if (isset($transaction->success) && $transaction->success == true) {
-                        $order = new ReadyOrder();
-                        $order->user_id = $user_id;
-                        $order->order_status = "pending";
-                        $order->name = $user->name;
-                        $order->email = $user->email;
-                        $order->phone = $user->phone;
-                        $order->address = ($user->address_same_as_company == 1) ? $user->address : $user->shipping_address;
-                        $order->city = ($user->address_same_as_company == 1) ? $user->city : $user->shipping_city;
-                        $order->state = ($user->address_same_as_company == 1) ? $user->state : $user->shipping_state;
-                        $order->pincode = ($user->address_same_as_company == 1) ? $user->pincode : $user->shipping_pincode;
-                        $order->gold_price = $gold_price_24k_1gm_mbo;
-                        $order->sub_total = $sub_total;
-                        $order->total = $total;
-                        $order->gst_amount = $gst_amount;
-                        $order->payment_status = 1;
-                        $order->transaction_id = (isset($transaction->data->transactionId)) ? $transaction->data->transactionId : "";
-                        $order->merchant_transaction_id = (isset($transaction->data->merchantTransactionId)) ? $transaction->data->merchantTransactionId : "";
-                        $order->payment_method = 'phonepe';
-                        $order->save();
-
-                        if ($order->id) {
-                            $product_ids = [];
-                            foreach ($cart_items as $cart_item) {
-
-                                $cart_item = CartReady::where('id', $cart_item)->first();
-                                if ($cart_item) {
-                                    $item_quantity = $cart_item->quantity;
-                                    $gross_weight = $cart_item->gross_weight;
-                                    $net_weight = $cart_item->net_weight;
-                                    $item_sub_total = $cart_item->total_amount;
-                                    $item_total = $item_sub_total * $item_quantity;
-
-                                    $order_item = new ReadyOrderItem();
-                                    $order_item->user_id = $user_id;
-                                    $order_item->order_id = $order->id;
-                                    // $order_item->design_id =  $cart_item->design_id;
-                                    $order_item->design_name =  $cart_item->name;
-                                    $order_item->quantity =  $item_quantity;
-                                    $order_item->gross_weight =  $gross_weight;
-                                    $order_item->net_weight =  $net_weight;
-                                    $order_item->item_sub_total = $item_sub_total;
-                                    $order_item->item_total = $item_total;
-                                    $order_item->barcode = $cart_item->barcode;
-                                    $order_item->save();
-
-                                    // $product_ids[] = $request->design_id;
-                                } else {
-                                    return $this->sendApiResponse(false, 0, 'Item Not Existing in Cart!', (object)[]);
-                                }
+                        // Add Dealer Commission
+                        if(!empty($commission_type) && $commission_value > 0 && $charges > 0){
+                            if($commission_type == 'percentage'){
+                                $commission_val = $charges * $commission_value / 100;
+                            }else{
+                                $commission_val = $charges - $commission_value;
                             }
-                            // $update_order = ReadyOrder::find($order->id);
-                            // $update_order->product_ids = $product_ids;
-                            // $update_order->update();
 
+                            $update_order->dealer_commission_type = $commission_type;
+                            $update_order->dealer_commission_value = $commission_value;
+                            $update_order->dealer_commission = $commission_val;
+                            $update_order->commission_date = $commission_date;
+                            $update_order->commission_status = 0;
+                        }
+
+                        $update_order->update();
+                    }
+
+                    // Delete Items from Cart
+                    CartReady::whereIn('id', $cart_items)->delete();
+                    
+                    return $this->sendApiResponse(true, 0, 'Order has been Placed.', $new_order->id);
+
+                }else {
+
+                    $transaction_id = (isset($request->transaction_id)) ? $request->transaction_id : "";                
+    
+                    if (!empty($transaction_id)) {
+                        $transaction = $this->checkPhonepePaymentStatus($transaction_id);
+    
+                        if (isset($transaction->success) && $transaction->success == true) {
+
+                            // Insert Order Details
+                            $order_input = [
+                                'user_id' => $user->id ?? "",
+                                'dealer_id' => $dealer->id ?? NULL,
+                                'order_status' => "pending",
+                                'name' => $user->name ?? "",
+                                'email' => $user->email ?? "",
+                                'phone' => $user->phone ?? "",
+                                'address' => ($user->address_same_as_company == 1) ? $user->address : $user->shipping_address,
+                                'city' => ($user->address_same_as_company == 1) ? $user->city : $user->shipping_city,
+                                'state' => ($user->address_same_as_company == 1) ? $user->state : $user->shipping_state,
+                                'pincode' => ($user->address_same_as_company == 1) ? $user->pincode : $user->shipping_pincode,
+                                'dealer_code' => $dealer_code,
+                                'dealer_discount_type' => $dealer_discount_type,
+                                'dealer_discount_value' => $dealer_discount_value,
+                                'gst_amount' => $gst_amount,
+                                'charges' => $charges,
+                                'sub_total' => $sub_total,
+                                'total' => $total,
+                                'payment_status' => 1,
+                                'payment_method' => 'phonepe',
+                                'transaction_id' => (isset($transaction->data->transactionId)) ? $transaction->data->transactionId : "",
+                                'merchant_transaction_id' => (isset($transaction->data->merchantTransactionId)) ? $transaction->data->merchantTransactionId : "",
+                            ];
+                            $new_order = ReadyOrder::create($order_input);
+
+                            // Insert Order Items
+                            if(isset($new_order->id)){
+                                foreach ($cart_items as $cart_item) {
+                                    $cart_item = CartReady::where('id', $cart_item)->first();
+                                    $item_quantity = $cart_item->quantity ?? 1;
+
+                                    $order_item_input = [
+                                        'user_id' => $user->id ?? "",
+                                        'dealer_id' => $dealer->id ?? NULL,
+                                        'order_id' => $new_order->id,
+                                        'design_name' => $cart_item->name ?? "",
+                                        'quantity' => $item_quantity,
+                                        'barcode' => $cart_item->barcode ?? "",
+                                        'gross_weight' => $cart_item->gross_weight ?? "",
+                                        'net_weight' => $cart_item->net_weight ?? "",
+                                        'metal_value' => $cart_item->metal_value ?? 0,
+                                        'making_charge' => $cart_item->making_charge ?? 0,
+                                        'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
+                                        'item_sub_total' => $cart_item->total_amount ?? 0,
+                                        'item_total' => $cart_item->total_amount * $item_quantity,
+                                    ];
+
+                                    ReadyOrderItem::create($order_item_input);
+                                }
+
+                                // Update Order
+                                $update_order = ReadyOrder::find($new_order->id);
+
+                                // Add Dealer Commission
+                                if(!empty($commission_type) && $commission_value > 0 && $charges > 0){
+                                    if($commission_type == 'percentage'){
+                                        $commission_val = $charges * $commission_value / 100;
+                                    }else{
+                                        $commission_val = $charges - $commission_value;
+                                    }
+
+                                    $update_order->dealer_commission_type = $commission_type;
+                                    $update_order->dealer_commission_value = $commission_value;
+                                    $update_order->dealer_commission = $commission_val;
+                                    $update_order->commission_date = $commission_date;
+                                    $update_order->commission_status = 0;
+                                }
+
+                                $update_order->update();
+                            }
+                            
                             // Delete Items from Cart
                             CartReady::whereIn('id', $cart_items)->delete();
+                            
+                            return $this->sendApiResponse(true, 0, 'Order has been Placed.', $new_order->id);
+                                                    
                         } else {
                             return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
                         }
-                        return response()->json([
-                            'status' => true,
-                            'message' => 'Order has been Placed SuccessFully.',
-                            'data'    => $order->id,
-                        ], Response::HTTP_OK);
-                    } else {
-                        return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
                     }
                 }
             }
+            return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', []);
         } catch (\Throwable $th) {
-            return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
-            //throw $th;
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
     }
 
@@ -2248,19 +2297,23 @@ class CustomerApiController extends Controller
     public function readyOrders(Request $request)
     {
         try {
-            $user_id = $request->user_id;
-            $user = User::where('id', $user_id)->first();
+            $validatedData = Validator::make($request->all(), [
+                'user_id' => 'required|exists:users,id',
+            ]);
 
-            if (isset($user->id)) {
-                $orders = ReadyOrder::orderBy('created_at', 'DESC')->get();
-
-                $data = new ReadyOrdersResource($orders);
-                return $this->sendApiResponse(true, 0, 'Orders has been Fetched.', $data);
-            } else {
-                return $this->sendApiResponse(false, 0, 'User Not Found!', (object)[]);
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
             }
+
+            $orders = ReadyOrder::where('user_id', $request->user_id)->orderBy('created_at', 'DESC')->get();
+            $data = new ReadyOrdersResource($orders);
+            return $this->sendApiResponse(true, 0, 'Orders has been Fetched.', $data);
+
         } catch (\Throwable $th) {
-            return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
 
@@ -2268,24 +2321,24 @@ class CustomerApiController extends Controller
     public function readyOrderDetails(Request $request)
     {
         try {
-            $order_id = $request->order_id;
-            $user_id = $request->user_id;
+            $validatedData = Validator::make($request->all(), [
+                'user_id' => 'required|exists:users,id',
+                'order_id' => 'required|exists:ready_orders,id',
+            ]);
 
-            $user = User::where('id', $user_id)->first();
-            if (isset($user->id)) {
-
-                $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
-                if (isset($order_details->id)) {
-                    $data = new ReadyOrderDetailsResource($order_details);
-                    return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
-                } else {
-                    return $this->sendApiResponse(false, 0, 'Order Not Found!', (object)[]);
-                }
-            } else {
-                return $this->sendApiResponse(false, 0, 'User Not Found!', (object)[]);
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
             }
+
+            $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('user_id', $request->user_id)->first();
+
+            $data = new ReadyOrderDetailsResource($order_details);
+            return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
         } catch (\Throwable $th) {
-            return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
 

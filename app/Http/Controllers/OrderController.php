@@ -39,9 +39,7 @@ class OrderController extends Controller
 
             $limit = $request->request->get('length');
             $start = $request->request->get('start');
-            // $order = $columns[$request->input('order.0.column')];
             $order = 'created_at';
-            // $dir = $request->input('order.0.dir');
             $dir = 'DESC';
             $search = $request->input('search.value');
 
@@ -80,6 +78,15 @@ class OrderController extends Controller
                         $order_status_html .= '<span class="badge bg-success">Completed.</span>';
                     }
                     $item['order_status'] = $order_status_html;
+
+                    // Payment Status
+                    $payment_status_html = '';
+                    if($order['payment_status'] == 1){
+                        $payment_status_html .= '<span class="badge bg-success">Paid.</span>';
+                    }else{
+                        $payment_status_html .= '<span class="badge bg-danger">Unpaid.</span>';
+                    }
+                    $item['payment_status'] = $payment_status_html;
 
                     $action_html = '';
                      if(Auth::guard('admin')->user()->can('orders.readytodispatch.show')){

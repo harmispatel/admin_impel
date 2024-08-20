@@ -9,6 +9,7 @@ class ReadyOrder extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
 
     public function order_items()
     {
