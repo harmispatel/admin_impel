@@ -2098,6 +2098,7 @@ class CustomerApiController extends Controller
             $total = (isset($request->total)) ? $request->total : 0;
 
             if ($request->payment_method == "cash") {
+
                 $admin_settings = getAdminSettings();
                 $gold_price_24k_1gm_mbo = (isset($admin_settings['gold_price_24k_1gm_mbo']) && !empty($admin_settings['gold_price_24k_1gm_mbo'])) ? $admin_settings['gold_price_24k_1gm_mbo'] : 0;
 
@@ -2114,7 +2115,7 @@ class CustomerApiController extends Controller
                     $order->state = ($user->address_same_as_company == 1) ? $user->state : $user->shipping_state;
                     $order->pincode = ($user->address_same_as_company == 1) ? $user->pincode : $user->shipping_pincode;
                     $order->gold_price = $gold_price_24k_1gm_mbo;
-                    $order->sub_total = $sub_total;
+                    $order->item_sub_total = $sub_total;
                     $order->total = $total;
                     $order->payment_method = 'cash';
                     $order->gst_amount = $gst_amount;
@@ -2122,20 +2123,19 @@ class CustomerApiController extends Controller
 
                     if ($order->id) {
                         $product_ids = [];
-                        foreach ($cart_items as $cart_item) {
 
+                        foreach ($cart_items as $cart_item) {
                             $cart_item = CartReady::where('id', $cart_item)->first();
                             if ($cart_item) {
                                 $item_quantity = $cart_item->quantity;
                                 $gross_weight = $cart_item->gross_weight;
                                 $net_weight = $cart_item->net_weight;
-                                $item_sub_total = $cart_item->price;
+                                $item_sub_total = $cart_item->total_amount;
                                 $item_total = $item_sub_total * $item_quantity;
 
                                 $order_item = new ReadyOrderItem();
                                 $order_item->user_id = $user_id;
                                 $order_item->order_id = $order->id;
-                                //$order_item->design_id =  $cart_item->design_id;
                                 $order_item->design_name =  $cart_item->name;
                                 $order_item->quantity =  $item_quantity;
                                 $order_item->gross_weight =  $gross_weight;
@@ -2149,11 +2149,6 @@ class CustomerApiController extends Controller
                             }
                         }
 
-
-                        // $update_order = ReadyOrder::find($order->id);
-                        // $update_order->product_ids = $product_ids;
-                        // $update_order->update();
-
                         // Delete Items from Cart
                         CartReady::whereIn('id', $cart_items)->delete();
                     } else {
@@ -2166,7 +2161,6 @@ class CustomerApiController extends Controller
                     ], Response::HTTP_OK);
                 }
             } else {
-
                 $transaction_id = (isset($request->transaction_id)) ? $request->transaction_id : "";
                 $admin_settings = getAdminSettings();
                 $gold_price_24k_1gm_mbo = (isset($admin_settings['gold_price_24k_1gm_mbo']) && !empty($admin_settings['gold_price_24k_1gm_mbo'])) ? $admin_settings['gold_price_24k_1gm_mbo'] : 0;
@@ -2204,7 +2198,7 @@ class CustomerApiController extends Controller
                                     $item_quantity = $cart_item->quantity;
                                     $gross_weight = $cart_item->gross_weight;
                                     $net_weight = $cart_item->net_weight;
-                                    $item_sub_total = $cart_item->price;
+                                    $item_sub_total = $cart_item->total_amount;
                                     $item_total = $item_sub_total * $item_quantity;
 
                                     $order_item = new ReadyOrderItem();
@@ -2245,7 +2239,6 @@ class CustomerApiController extends Controller
                 }
             }
         } catch (\Throwable $th) {
-            dd($th);
             return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
             //throw $th;
         }
