@@ -401,6 +401,7 @@ Route::group(['prefix' => 'admin'], function ()
 
             Route::post('orders/process', 'orderProcess')->name('orders.process');
             Route::post('orders/ready-to-dispatch/process', 'ReadyToOrderProcess')->name('orders.readytodispatch.process');
+            Route::post('orders/ready-to-dispatch/paid', 'ReadyToOrderPaid')->name('orders.readytodispatch.paid');
 
             Route::post('orders/process-commission', 'processOrderCommission')->name('orders.process.commission');
 

@@ -369,6 +369,28 @@ class OrderController extends Controller
     }
 
 
+    public function ReadyToOrderPaid(Request $request)
+    {
+        try {
+            $order_id = $request->id;
+            $order = ReadyOrder::find($order_id);
+            $order->payment_status = 1;
+            $order->update();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order has been Paid.',
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Oops, Something went wrong!',
+            ]);
+        }
+    }
+
+
     // Proccessing Order Commission
     public function processOrderCommission(Request $request)
     {

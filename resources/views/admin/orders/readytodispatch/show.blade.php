@@ -43,7 +43,11 @@
                                 @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted' || $order->order_status == 'processing'))
                                     <a onclick="processOrder('completed', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>COMPLETE</strong> <i class="fa-solid fa-check-circle"></i></a>
                                 @endif
-                            @endcan                            
+                            @endcan
+                            
+                            @if(isset($order->payment_status) && $order->payment_status == 0)
+                                <a onclick="paidPayment({{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>PAID</strong> <i class="fa-solid fa-money-bill"></i> <i class="fa-solid fa-check"></i></a>
+                            @endif
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -295,6 +299,28 @@
             data: {
                 "_token": "{{ csrf_token() }}",
                 "status": status,
+                'id': id,
+            },
+            dataType: "JSON",
+            success: function(response) {
+                if (response.success == true) {
+                    toastr.success(response.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1200);
+                } else {
+                    toastr.error(response.message);
+                }
+            }
+        });
+    }
+
+    function paidPayment(id){
+        $.ajax({
+            type: "POST",
+            url: "{{ route('orders.readytodispatch.paid') }}",
+            data: {
+                "_token": "{{ csrf_token() }}",
                 'id': id,
             },
             dataType: "JSON",
