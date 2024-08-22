@@ -507,9 +507,6 @@ class CustomerApiController extends Controller
 
             return $this->sendApiResponse(true, 0, 'Profile Loaded SuccessFully', $data);
         } catch (\Throwable $th) {
-
-            dd($th);
-
             return $this->sendApiResponse(false, 0, 'Failed to Load Profile!', (object)[]);
         }
     }
@@ -1989,12 +1986,14 @@ class CustomerApiController extends Controller
                 'item_id' => 'required',
                 'sub_item_id' => 'required',
                 'style_id' => 'required',
-                'metal_value' => 'required',
+                'metal_value' => 'required|gt:0',
+            ],[
+                'metal_value.gt' => 'Price is not valid!'
             ]);
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }
@@ -2045,7 +2044,7 @@ class CustomerApiController extends Controller
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }
@@ -2071,7 +2070,7 @@ class CustomerApiController extends Controller
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }
@@ -2092,11 +2091,14 @@ class CustomerApiController extends Controller
             $validatedData = Validator::make($request->all(), [
                 'user_id' => 'required|exists:users,id',
                 'payment_method' => 'required|in:cash,phonepe',
+                'total' => 'gt:0'
+            ],[
+                'total.gt' => 'Cart total is invalid'
             ]);
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }
@@ -2142,6 +2144,7 @@ class CustomerApiController extends Controller
                         'payment_status' => 0,
                         'payment_method' => 'cash',
                     ];
+                    
                     $new_order = ReadyOrder::create($order_input);
 
                     // Insert Order Items
@@ -2150,23 +2153,24 @@ class CustomerApiController extends Controller
                             $cart_item = CartReady::where('id', $cart_item)->first();
                             $item_quantity = $cart_item->quantity ?? 1;
 
-                            $order_item_input = [
-                                'user_id' => $user->id ?? "",
-                                'dealer_id' => $dealer->id ?? NULL,
-                                'order_id' => $new_order->id,
-                                'design_name' => $cart_item->name ?? "",
-                                'quantity' => $item_quantity,
-                                'barcode' => $cart_item->barcode ?? "",
-                                'gross_weight' => $cart_item->gross_weight ?? "",
-                                'net_weight' => $cart_item->net_weight ?? "",
-                                'metal_value' => $cart_item->metal_value ?? 0,
-                                'making_charge' => $cart_item->making_charge ?? 0,
-                                'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
-                                'item_sub_total' => $cart_item->total_amount ?? 0,
-                                'item_total' => $cart_item->total_amount * $item_quantity,
-                            ];
-
-                            ReadyOrderItem::create($order_item_input);
+                            if($cart_item->metal_value > 0){
+                                $order_item_input = [
+                                    'user_id' => $user->id ?? "",
+                                    'dealer_id' => $dealer->id ?? NULL,
+                                    'order_id' => $new_order->id,
+                                    'design_name' => $cart_item->name ?? "",
+                                    'quantity' => $item_quantity,
+                                    'barcode' => $cart_item->barcode ?? "",
+                                    'gross_weight' => $cart_item->gross_weight ?? "",
+                                    'net_weight' => $cart_item->net_weight ?? "",
+                                    'metal_value' => $cart_item->metal_value ?? 0,
+                                    'making_charge' => $cart_item->making_charge ?? 0,
+                                    'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
+                                    'item_sub_total' => $cart_item->total_amount ?? 0,
+                                    'item_total' => $cart_item->total_amount * $item_quantity,
+                                ];
+                                ReadyOrderItem::create($order_item_input);
+                            }
                         }
 
                         // Update Order
@@ -2235,24 +2239,27 @@ class CustomerApiController extends Controller
                                 foreach ($cart_items as $cart_item) {
                                     $cart_item = CartReady::where('id', $cart_item)->first();
                                     $item_quantity = $cart_item->quantity ?? 1;
-
-                                    $order_item_input = [
-                                        'user_id' => $user->id ?? "",
-                                        'dealer_id' => $dealer->id ?? NULL,
-                                        'order_id' => $new_order->id,
-                                        'design_name' => $cart_item->name ?? "",
-                                        'quantity' => $item_quantity,
-                                        'barcode' => $cart_item->barcode ?? "",
-                                        'gross_weight' => $cart_item->gross_weight ?? "",
-                                        'net_weight' => $cart_item->net_weight ?? "",
-                                        'metal_value' => $cart_item->metal_value ?? 0,
-                                        'making_charge' => $cart_item->making_charge ?? 0,
-                                        'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
-                                        'item_sub_total' => $cart_item->total_amount ?? 0,
-                                        'item_total' => $cart_item->total_amount * $item_quantity,
-                                    ];
-
-                                    ReadyOrderItem::create($order_item_input);
+                                    
+                                    if($cart_item->metal_value > 0){
+                                        $order_item_input = [
+                                            'user_id' => $user->id ?? "",
+                                            'dealer_id' => $dealer->id ?? NULL,
+                                            'order_id' => $new_order->id,
+                                            'design_name' => $cart_item->name ?? "",
+                                            'quantity' => $item_quantity,
+                                            'barcode' => $cart_item->barcode ?? "",
+                                            'gross_weight' => $cart_item->gross_weight ?? "",
+                                            'net_weight' => $cart_item->net_weight ?? "",
+                                            'metal_value' => $cart_item->metal_value ?? 0,
+                                            'making_charge' => $cart_item->making_charge ?? 0,
+                                            'making_charge_discount' => $cart_item->making_charge_discount ?? 0,
+                                            'item_sub_total' => $cart_item->total_amount ?? 0,
+                                            'item_total' => $cart_item->total_amount * $item_quantity,
+                                        ];
+    
+                                        ReadyOrderItem::create($order_item_input);
+                                    }
+                                    
                                 }
 
                                 // Update Order
@@ -2303,7 +2310,7 @@ class CustomerApiController extends Controller
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }
@@ -2328,7 +2335,7 @@ class CustomerApiController extends Controller
 
             if ($validatedData->fails()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => $validatedData->errors()->first()
                 ]);
             }

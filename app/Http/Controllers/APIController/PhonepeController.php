@@ -27,7 +27,7 @@ class PhonepeController extends Controller
             }
 
             if(!isset($request->total_amount) || $request->total_amount <= 0){
-                return $this->sendResponse(false, 'Please Enter Valid Amount!');
+                return $this->sendResponse(false, 'Cart amount is not valid!');
             }elseif(!isset($request->user_id) && empty($request->user_id)){
                 return $this->sendResponse(false, 'User not Found!');
             }else{
