@@ -94,7 +94,17 @@
 
     }
 
+    if(isset($documents_errors['commission_value'])){
 
+        unset($documents_errors['commission_value']);
+
+    }
+
+    if(isset($documents_errors['commission_days'])){
+
+        unset($documents_errors['commission_days']);
+
+    }
 
 @endphp
 
