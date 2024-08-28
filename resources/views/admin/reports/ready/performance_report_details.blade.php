@@ -154,7 +154,7 @@
 
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
 
-                        <li class="breadcrumb-item"><a href="{{ route('reports.performance') }}">Dealer Performance Report</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('reports.ready.performance') }}">Dealer Performance Report</a></li>
 
                         <li class="breadcrumb-item active">Dealer Performance Report Details</li>
 
