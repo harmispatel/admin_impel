@@ -2075,10 +2075,12 @@ class CustomerApiController extends Controller
                 ]);
             }
             
-            CartReady::find($request->cart_id)->delete();
+            $cart_item = CartReady::where('id', $request->cart_id)->first();
+            $cart_item->delete();
 
-            return $this->sendApiResponse(true, 0, 'Item has been Removed.', []);
+            $data['total_quantity'] =  CartReady::where('user_id', $cart_item['user_id'])->sum('quantity');
 
+            return $this->sendApiResponse(true, 0, 'Item has been Removed.', $data);
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
