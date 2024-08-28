@@ -25,4 +25,9 @@ class ReadyOrder extends Model
     {
         return $this->hasOne(State::class, 'id', 'state');
     }
+
+    public function dealer()
+    {
+        return $this->hasOne(User::class, 'id', 'dealer_id');
+    }
 }

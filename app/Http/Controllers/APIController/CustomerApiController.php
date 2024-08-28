@@ -2304,6 +2304,7 @@ class CustomerApiController extends Controller
     public function readyOrders(Request $request)
     {
         try {
+
             $validatedData = Validator::make($request->all(), [
                 'user_id' => 'required|exists:users,id',
             ]);
@@ -2315,7 +2316,15 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $orders = ReadyOrder::where('user_id', $request->user_id)->orderBy('created_at', 'DESC')->get();
+            $user_type = $request->user_type ?? "";
+
+            if ($user_type == 1) {
+                $orders = ReadyOrder::where('dealer_id', $request->user_id)->orderBy('created_at', 'DESC')->get();
+            }else{
+                $orders = ReadyOrder::where('user_id', $request->user_id)->orderBy('created_at', 'DESC')->get();
+            }
+
+            
             $data = new ReadyOrdersResource($orders);
             return $this->sendApiResponse(true, 0, 'Orders has been Fetched.', $data);
 

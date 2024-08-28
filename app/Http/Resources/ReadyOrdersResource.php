@@ -35,6 +35,12 @@ class ReadyOrdersResource extends JsonResource
 
             foreach($orders_arr as $order){
                 $order_details['order_id'] = (isset($order['id'])) ? $order['id'] : '';
+                $order_details['dealer'] = (isset($order->dealer['name'])) ? $order->dealer['name'] : '';
+                $order_details['dealer_code'] = (isset($order['dealer_code'])) ? $order['dealer_code'] : '';
+                $order_details['dealer_discount_type'] = (isset($order['dealer_discount_type'])) ? $order['dealer_discount_type'] : '';
+                $order_details['dealer_discount_value'] = (isset($order['dealer_discount_value'])) ? $order['dealer_discount_value'] : '';
+                $order_details['dealer_commission'] = (isset($order['dealer_commission'])) ? $order['dealer_commission'] : '';
+                $order_details['commission_status'] = (isset($order['commission_status'])) ? $order['commission_status'] : '';
                 $order_details['order_status'] = (isset($order['order_status'])) ? $order['order_status'] : '';
                 $order_details['customer'] = (isset($order['name'])) ? $order['name'] : '';
                 $order_details['customer_email'] = (isset($order['email'])) ? $order['email'] : '';
