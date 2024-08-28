@@ -244,7 +244,7 @@
 
                                                 <label for="discount_value" class="form-label">Discount Value <span class="text-danger">*</span></label>
 
-                                                <input type="number" name="discount_value" id="discount_value" class="form-control {{ ($errors->has('discount_value')) ? 'is-invalid' : '' }}" value="{{ old('discount_value') }}" placeholder="Enter Discount Value">
+                                                <input type="number" name="discount_value" id="discount_value" class="form-control {{ ($errors->has('discount_value')) ? 'is-invalid' : '' }}" value="{{ old('discount_value') }}" placeholder="Enter Discount Value" inputmode="numeric">
 
                                                 @if ($errors->has('discount_value'))
 
@@ -286,7 +286,7 @@
 
                                                 <label for="commission_value" class="form-label">Commission Value <span class="text-danger">*</span></label>
 
-                                                <input type="number" name="commission_value" id="commission_value" class="form-control {{ ($errors->has('commission_value')) ? 'is-invalid' : '' }}" value="{{ old('commission_value') }}" placeholder="Enter Commission Value">
+                                                <input type="number" name="commission_value" id="commission_value" class="form-control {{ ($errors->has('commission_value')) ? 'is-invalid' : '' }}" value="{{ old('commission_value') }}" placeholder="Enter Commission Value" inputmode="numeric">
 
                                                 @if ($errors->has('commission_value'))
 
@@ -304,7 +304,7 @@
 
                                                 <label for="commission_days" class="form-label">Commission Days <span class="text-danger">*</span></label>
 
-                                                <input type="number" name="commission_days" id="commission_days" class="form-control {{ ($errors->has('commission_days')) ? 'is-invalid' : '' }}" value="{{ old('commission_days') }}" placeholder="Enter Commission Days">
+                                                <input type="number" name="commission_days" id="commission_days" class="form-control {{ ($errors->has('commission_days')) ? 'is-invalid' : '' }}" value="{{ old('commission_days') }}" placeholder="Enter Commission Days" inputmode="numeric">
 
                                                 @if ($errors->has('commission_days'))
 
@@ -340,7 +340,7 @@
 
                                                 <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
 
-                                                <input type="number" name="phone" id="phone" class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}" placeholder="Enter Dealer Phone" value="{{ old('phone') }}">
+                                                <input type="number" name="phone" id="phone" class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}" placeholder="Enter Dealer Phone" value="{{ old('phone') }}" inputmode="numeric">
 
                                                 @if ($errors->has('phone'))
 
@@ -548,7 +548,7 @@
 
                                                 <label for="whatsapp_no" class="form-label">Specific Whatsapp No.</label>
 
-                                                <input type="number" name="whatsapp_no" class="form-control" id="whatsapp_no" placeholder="Enter Specific Whatsapp No." value="{{ old('whatsapp_no') }}">
+                                                <input type="number" name="whatsapp_no" class="form-control" id="whatsapp_no" placeholder="Enter Specific Whatsapp No." value="{{ old('whatsapp_no') }}" inputmode="numeric">
 
                                             </div>
 

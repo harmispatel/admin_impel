@@ -474,7 +474,7 @@
 
                                                                 @can('orders.accept')
 
-                                                                    <a onclick="processOrder('accepted', {{ $order->id }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Accept Order" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-check-circle"></i></a>
+                                                                    <a onclick="processOrder('accepted', {{ $order->id }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Accept Order" class="btn btn-sm btn-info text-white mb-2"><i class="fa-solid fa-check-circle"></i></a>
 
                                                                 @endcan
 
@@ -484,7 +484,7 @@
 
                                                                 @can('orders.show')
 
-                                                                    <a href="{{ route('orders.show',encrypt($order->id)) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="View Order" class="btn btn-sm custom-btn"><i class="fa-solid fa-eye"></i></a>
+                                                                    <a href="{{ route('orders.show',encrypt($order->id)) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="View Order" class="btn btn-sm custom-btn mb-2"><i class="fa-solid fa-eye"></i></a>
 
                                                                 @endcan
 

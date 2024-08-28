@@ -1478,7 +1478,7 @@ class CustomerApiController extends Controller
                                 if($commission_type == 'percentage'){
                                     $commission_val = $charges * $commission_value / 100;
                                 }else{
-                                    $commission_val = $charges - $commission_value;
+                                    $commission_val = $commission_value;
                                 }
 
                                 $update_order->dealer_commission_type = $commission_type;
@@ -1838,7 +1838,7 @@ class CustomerApiController extends Controller
 
         try {
 
-            $data = Testimonial::all();
+            $data = Testimonial::where('status', 1)->get();
 
             return new TestimonialsCollection($data);
         } catch (\Throwable $th) {
@@ -2181,7 +2181,7 @@ class CustomerApiController extends Controller
                             if($commission_type == 'percentage'){
                                 $commission_val = $charges * $commission_value / 100;
                             }else{
-                                $commission_val = $charges - $commission_value;
+                                $commission_val = $commission_value;
                             }
 
                             $update_order->dealer_commission_type = $commission_type;
@@ -2270,7 +2270,7 @@ class CustomerApiController extends Controller
                                     if($commission_type == 'percentage'){
                                         $commission_val = $charges * $commission_value / 100;
                                     }else{
-                                        $commission_val = $charges - $commission_value;
+                                        $commission_val = $commission_value;
                                     }
 
                                     $update_order->dealer_commission_type = $commission_type;

@@ -148,6 +148,7 @@ class OrderController extends Controller
                     $item['phone'] = (isset($order['phone'])) ? $order['phone'] : '';
                     $item['dealer'] = (isset($order->dealer['name'])) ? $order->dealer['name'] : '-';
                     $item['dealer_code'] = (isset($order['dealer_code']) && !empty($order['dealer_code'])) ? $order['dealer_code'] : '-';
+                    $item['advance'] = (isset($order['advance_payment']) && !empty($order['advance_payment'])) ? "₹".($order['advance_payment'] / 100) : '-';
 
                     // Order Status
                     $order_status_html = '';
