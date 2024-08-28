@@ -2351,7 +2351,11 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('user_id', $request->user_id)->first();
+            if(isset($request->user_type) && $request->user_type == 1){
+                $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('dealer_id', $request->user_id)->first();
+            }else{
+                $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('user_id', $request->user_id)->first();
+            }
 
             $data = new ReadyOrderDetailsResource($order_details);
             return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
