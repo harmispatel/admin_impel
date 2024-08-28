@@ -268,7 +268,7 @@
 
         loadRecords(selectedStartDate, selectedEndDate);
 
-        $('#pay_order_commission').on('keypress', function(e) {
+        $('#pay_order_commission, #process_order_commission').on('keypress', function(e) {
             if (e.which === 13) { // 13 is the Enter key
                 e.preventDefault();
                 return false;
