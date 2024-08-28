@@ -2075,10 +2075,12 @@ class CustomerApiController extends Controller
                 ]);
             }
             
-            CartReady::find($request->cart_id)->delete();
+            $cart_item = CartReady::where('id', $request->cart_id)->first();
+            $cart_item->delete();
 
-            return $this->sendApiResponse(true, 0, 'Item has been Removed.', []);
+            $data['total_quantity'] =  CartReady::where('user_id', $cart_item['user_id'])->sum('quantity');
 
+            return $this->sendApiResponse(true, 0, 'Item has been Removed.', $data);
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
@@ -2349,7 +2351,11 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('user_id', $request->user_id)->first();
+            if(isset($request->user_type) && $request->user_type == 1){
+                $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('dealer_id', $request->user_id)->first();
+            }else{
+                $order_details = ReadyOrder::with(['order_items'])->where('id', $request->order_id)->where('user_id', $request->user_id)->first();
+            }
 
             $data = new ReadyOrderDetailsResource($order_details);
             return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
