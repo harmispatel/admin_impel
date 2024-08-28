@@ -400,13 +400,13 @@ $page_key = (isset(Route::current()->parameters()['page_key'])) ? Route::current
 
         <li class="nav-item">
 
-            <a class="nav-link {{ $currentRouteName == 'reports.summary' || $currentRouteName == 'reports.star' || $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.performance.details' ? '' : 'collapsed' }}" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
+            <a class="nav-link {{ $currentRouteName == 'reports.summary' || $currentRouteName == 'reports.star' || $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.ready.performance.details' ||$currentRouteName == 'reports.performance.details' ? '' : 'collapsed' }}" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
 
                 <i class="fa-solid fa-file"></i> <span>Reports</span> <i class="bi bi-chevron-down ms-auto"></i>
 
             </a>
 
-            <ul id="report-nav" class="nav-content collapse {{ $currentRouteName == 'reports.summary' || $currentRouteName == 'reports.star' || $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.performance.details' ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+            <ul id="report-nav" class="nav-content collapse {{ $currentRouteName == 'reports.summary' || $currentRouteName == 'reports.star' || $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance'|| $currentRouteName == 'reports.ready.performance' || $currentRouteName == 'reports.ready.performance.details' ||$currentRouteName == 'reports.performance.details' ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
 
                 <li class="nav-item">
 
@@ -444,13 +444,13 @@ $page_key = (isset(Route::current()->parameters()['page_key'])) ? Route::current
 
                 <li class="nav-item">
 
-                    <a class="nav-link {{ $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.performance.details' ? '' : 'collapsed' }}" data-bs-target="#dealer-reports" data-bs-toggle="collapse" href="#">
+                    <a class="nav-link {{ $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance'|| $currentRouteName == 'reports.ready.performance' || $currentRouteName == 'reports.performance.details' ? '' : 'collapsed' }}" data-bs-target="#dealer-reports" data-bs-toggle="collapse" href="#">
 
                         <span> Dealer Reports</span><i class="bi bi-chevron-down ms-auto"></i>
 
                     </a>
 
-                    <ul id="dealer-reports" class="nav-content collapse {{ $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.performance.details' ? 'show' : '' }}" data-bs-parent="#report-nav">
+                    <ul id="dealer-reports" class="nav-content collapse {{ $currentRouteName == 'reports.scheme' || $currentRouteName == 'reports.performance' || $currentRouteName == 'reports.ready.performance' || $currentRouteName == 'reports.ready.performance.details' || $currentRouteName == 'reports.performance.details' ? 'show' : '' }}" data-bs-parent="#report-nav">
 
                         {{-- <ol>
 
@@ -469,6 +469,11 @@ $page_key = (isset(Route::current()->parameters()['page_key'])) ? Route::current
                                 <i class="bi bi-circle"></i><span>Performance</span>
 
                             </a>
+                          
+                            <a href="{{ route('reports.ready.performance') }}" class="{{ $currentRouteName == 'reports.ready.performance' || $currentRouteName == 'reports.ready.performance.details' ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Ready Order Performance</span>
+                            </a>
+
 
                         </ol>
 

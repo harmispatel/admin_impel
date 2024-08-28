@@ -375,12 +375,15 @@ Route::group(['prefix' => 'admin'], function ()
             Route::get('reports/scheme', 'schemeReport')->name('reports.scheme');
 
             Route::get('reports/performance', 'performanceReport')->name('reports.performance');
-
             Route::get('reports/performance/load', 'loadPerformanceReport')->name('reports.performance.load');
-
             Route::get('reports/performance/details/{dealer_id}', 'performanceReportDetails')->name('reports.performance.details');
-
             Route::get('reports/performance/details-load', 'loadPerformanceReportDetails')->name('reports.performance.details.load');
+
+            //Ready To dispatch report order
+            Route::get('reports/performance/ready', 'ReadyPerformanceReport')->name('reports.ready.performance');
+            Route::get('reports/performance/ready/load', 'ReadyloadPerformanceReport')->name('reports.ready.performance.load');
+            Route::get('reports/performance/ready/details/{dealer_id}', 'ReadyperformanceReportDetails')->name('reports.ready.performance.details');
+            Route::get('reports/performance/ready/details-load', 'ReadyloadPerformanceReportDetails')->name('reports.ready.performance.details.load');
 
         });
 
@@ -407,6 +410,10 @@ Route::group(['prefix' => 'admin'], function ()
 
             Route::post('orders/pay-commission', 'payOrderCommission')->name('orders.pay.commission');
 
+
+            //ready to dispatch
+            Route::post('orders/ready/process-commission', 'ReadyprocessOrderCommission')->name('orders.ready.process.commission');
+            Route::post('orders/ready/pay-commission', 'ReadypayOrderCommission')->name('orders.ready.pay.commission');
         });
 
 

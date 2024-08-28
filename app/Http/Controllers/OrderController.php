@@ -507,4 +507,122 @@ class OrderController extends Controller
             ]);
         }
     }
+
+
+
+    // ready to dispatch Proccessing Order Commission 
+    public function ReadyprocessOrderCommission(Request $request)
+    {
+        $request->validate([
+            'labour_value' => 'required',
+            'bill_date' => 'required',
+            'bill_number' => 'required|unique:orders,bill_number',
+        ]);
+
+        try {
+            $order_id = $request->order_id;
+            $labour_value = $request->labour_value;
+            $bill_date = $request->bill_date;
+            $bill_number = $request->bill_number;
+
+            $order = Order::find($order_id);
+            if(isset($order->id) && $order_id != ''){
+                $dealer = (isset($order->dealer)) ? $order->dealer : '';
+                if(isset($dealer->id) && !empty($dealer->id)){
+                    $commission_type = $dealer->commission_type;
+                    $commission_value = $dealer->commission_value;
+                    $commission_days = $dealer->commission_days;
+
+                    $commission_amount = 0;
+                    if($commission_type == 'percentage'){ // percentage
+                        $commission_amount = $labour_value * $commission_value / 100;
+                    }else{ // fixed
+                        $commission_amount = $commission_value;
+                    }
+
+                    // Get End Date using bill Date
+                    $commission_pay_date = Carbon::parse($bill_date)->addDays($commission_days);
+
+                    $order->dealer_commission_type = $commission_type;
+                    $order->dealer_commission_value = $commission_value;
+                    $order->dealer_commission = $commission_amount;
+                    $order->commission_status = 0;
+                    $order->bill_date = $bill_date;
+                    $order->bill_number = $bill_number;
+                    $order->labour_value = $labour_value;
+                    $order->commission_date = $commission_pay_date;
+                    $order->update();
+
+                    return response()->json([
+                        'success' => 1,
+                        'message' => 'Commission has been Applied.',
+                    ]);
+
+                }else{
+                    return response()->json([
+                        'success' => 0,
+                        'message' => 'Oops, Dealer not found!',
+                    ]);
+                }
+            }else{
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Oops, Order not found!',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => 0,
+                'message' => 'Oops, Something went wrong!',
+            ]);
+        }
+    }
+
+    //ready to dispatch  Pay Order Commission 
+    public function ReadypayOrderCommission(Request $request)
+    {
+        $request->validate([
+            'payment_date' => 'required',
+            'transaction_id' => 'required|unique:orders,transaction_id',
+        ]);
+
+        try {
+            $order_id = $request->order_id;
+            $transaction_id = $request->transaction_id;
+            $payment_date = $request->payment_date;
+
+            $order = ReadyOrder::find($order_id);
+            if(isset($order->id) && $order_id != ''){
+                $dealer = (isset($order->dealer)) ? $order->dealer : '';
+                if(isset($dealer->id) && !empty($dealer->id)){
+                    $order->transaction_id = $transaction_id;
+                    $order->commission_payment_date = $payment_date;
+                    $order->commission_status = 1;
+                    $order->update();
+
+                    return response()->json([
+                        'success' => 1,
+                        'message' => 'Commission has been Paid SuccessFully.',
+                    ]);
+
+                }else{
+                    return response()->json([
+                        'success' => 0,
+                        'message' => 'Oops, Dealer not found!',
+                    ]);
+                }
+            }else{
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Oops, Order not found!',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => 0,
+                'message' => 'Oops, Something went wrong!',
+            ]);
+        }
+    }
+
 }
