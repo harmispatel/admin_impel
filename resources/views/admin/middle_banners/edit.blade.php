@@ -86,7 +86,7 @@
 
                                                 @endif
 
-                                                <code>Note -: Image Upload in this Dimensions (450 x 550)</code>
+                                                <code>Note -: Image Upload in this Dimensions (400 x 400)</code>
 
                                                 <div class="div mt-2">
 
