@@ -180,7 +180,7 @@ class MiddleBannerController extends Controller
 
             if($request->hasFile('image')){
 
-                $image = $this->addSingleImage('middle_banner', 'middle_banners', $request->file('image'), '', "450*550");
+                $image = $this->addSingleImage('middle_banner', 'middle_banners', $request->file('image'), '', "400*400");
 
                 $input['image'] = $image;
 
@@ -252,7 +252,7 @@ class MiddleBannerController extends Controller
 
                 $old_image = (isset($middle_banner['image'])) ? $middle_banner['image'] : '';
 
-                $image = $this->addSingleImage('middle_banner', 'middle_banners', $request->file('image'), $old_image, "450*550");
+                $image = $this->addSingleImage('middle_banner', 'middle_banners', $request->file('image'), $old_image, "400*400");
 
                 $input['image'] = $image;
 
