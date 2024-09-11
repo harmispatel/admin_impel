@@ -1523,18 +1523,21 @@ class CustomerApiController extends Controller
         if ($phonepe_live == 1) {
             $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_live_merchant_id'])) ? $admin_settings['phonepe_live_merchant_id'] : '';
             $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_live_salt_key'])) ? $admin_settings['phonepe_live_salt_key'] : '';
+            $phonepe_url = 'https://api.phonepe.com/apis/hermes/pg/v1/status/';
         } else {
             $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_sandbox_merchant_id'])) ? $admin_settings['phonepe_sandbox_merchant_id'] : '';
             $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_sandbox_salt_key'])) ? $admin_settings['phonepe_sandbox_salt_key'] : '';
+            $phonepe_url = 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/';
         }
 
         $saltKey = $phonepe_cred['salt_key'];
         $saltIndex = 1;
-        $finalXHeader = hash('sha256', '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id . '' . $saltKey) . '###' . $saltIndex;
-
+        $path = '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id;
+        $finalXHeader = hash('sha256', $path . $saltKey) . '###' . $saltIndex;
+        
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id . '',
+            CURLOPT_URL => $phonepe_url . $phonepe_cred['merchant_id'] . '/' . $transaction_id,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -1546,7 +1549,7 @@ class CustomerApiController extends Controller
                 'Content-Type: application/json',
                 'accept: application/json',
                 'X-VERIFY: ' . $finalXHeader,
-                'X-MERCHANT-ID: ' . $transaction_id
+                'X-MERCHANT-ID: ' . $phonepe_cred['merchant_id']
             ),
         ));
 
@@ -2291,6 +2294,9 @@ class CustomerApiController extends Controller
                             return $this->sendApiResponse(true, 0, 'Order has been Placed.', $new_order->id);
                                                     
                         } else {
+                            echo '<pre>';
+                            print_r(1);
+                            exit();
                             return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', (object)[]);
                         }
                     }
