@@ -2462,7 +2462,10 @@ class CustomerApiController extends Controller
                 'expire_at' => $now->addMinutes(3),
             ]);
         }
-        return $response;
+        return response()->json([
+            'status' => true,
+            'message' => "Otp Send Successfully"
+        ]);
     }
 
     //otp verify
