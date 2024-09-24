@@ -178,3 +178,6 @@ Route::post('ready-to-dispatch-details', [CustomerApiController::class, 'readyTo
 Route::post('ready-to-dispatch-filters', [CustomerApiController::class, 'readyToDispatchFilters']);
 
 Route::post('ready-to-dispatch-price', [CustomerApiController::class, 'readyToDispatchPrice']);
+
+Route::post('send-otp-login', [CustomerApiController::class, 'SendLoginOtp']);
+Route::post('login-with-otp', [CustomerApiController::class, 'loginWithOtp']);
