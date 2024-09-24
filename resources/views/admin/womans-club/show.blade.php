@@ -35,6 +35,10 @@
                             <td>{{ $woman_club_request->email }}</td>
                         </tr>
                         <tr>
+                            <th width="25%">Date</th>
+                            <td>{{ $woman_club_request->date }}</td>
+                        </tr>
+                        <tr>
                             <th width="25%">Mobile No.</th>
                             <td>{{ $woman_club_request->mobile }}</td>
                         </tr>
