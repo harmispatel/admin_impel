@@ -404,10 +404,11 @@
             format: 'DD-MM-YYYY' // Set the desired date format here
 
         },
+        startDate: moment().startOf('month'),
+        endDate: moment().endOf('month')
+        // startDate: moment().subtract(1, 'months').startOf('month'),
 
-        startDate: moment().subtract(1, 'months').startOf('month'),
-
-        endDate: moment().subtract(1, 'months').endOf('month')
+        // endDate: moment().subtract(1, 'months').endOf('month')
 
     }, function(start, end, label) {
 
