@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, ReadyOrder, ReadyOrderItem};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, ReadyOrder, ReadyOrderItem, UserOtp};
 use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
 use GuzzleHttp\Client;
@@ -2386,5 +2386,126 @@ class CustomerApiController extends Controller
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
+    }
+
+    // send otp
+    public function SendLoginOtp(Request $request)
+    {
+        $validatedData = Validator::make($request->all(), [
+            'number' => 'required'
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validatedData->errors()->first()
+            ]);
+        }
+
+        $curl = curl_init();
+        $number = $request->number;
+        $otp = rand(100000, 999999); 
+        $APIKey = 'q9o165ctikCFWUQWnqLBww';
+        $senderid = 'IMPELE';
+        $channel = 2;
+        $DCS = 0;
+        $flashsms = 0;
+        $text = "Welcome to Impel, {$otp} is your login OTP for Impel Registration.";
+        $route = 31;
+        $EntityId = 1701172630214402951;
+        $dlttemplateid = 1707172648675000362;
+
+        // Set the POST URL
+        $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+
+        // Set the query parameters
+        $queryParams = http_build_query([
+            'APIKey' => $APIKey,
+            'senderid' => $senderid,
+            'channel' => $channel,
+            'DCS' => $DCS,
+            'flashsms' => $flashsms,
+            'number' => $number,
+            'text' => $text,
+            'route' => $route,
+            'EntityId' => $EntityId,
+            'dlttemplateid' => $dlttemplateid
+        ]);
+
+        // Set curl options
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url.'?' . $queryParams,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
+        ]);
+
+        // Execute the request
+        $response = curl_exec($curl);
+
+        // Check for errors
+        if (curl_errno($curl)) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            return response()->json(['error' => $error], 500);
+        }
+
+        // Close cURL
+        curl_close($curl);
+        $responseData = json_decode($response, true);
+
+        if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
+            $now = now();
+           
+            $user = UserOtp::where('number',$number)->first();
+            if(!empty($user)){
+                $user->delete();
+            }
+
+            UserOtp::create([
+                'number' => $number,
+                'otp' => $otp,
+                'expire_at' => $now->addMinutes(3),
+            ]);
+        }
+        return response()->json([
+            'status' => true,
+            'message' => "Otp Send Successfully"
+        ]);
+    }
+
+    //otp verify
+    public function loginWithOtp(Request $request)
+    {   
+        $validatedData = Validator::make($request->all(), [
+            'otp' => 'required'
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validatedData->errors()->first()
+            ]);
+        }
+
+        $userOtp = UserOtp::where('number',$request->number)->where('otp',$request->otp)->first();
+
+        $now = now();
+        if (!$userOtp) {
+            return response()->json([
+                'status' => false,
+                'message' => "Your OTP is not correct"
+            ]);
+        }else if($userOtp && $now->isAfter($userOtp->expire_at)){
+            return response()->json([
+                'status' => false,
+                'message' => "Your OTP has been expired"
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "Otp Verifiy Successfully"
+        ]);
     }
 }
