@@ -1513,48 +1513,50 @@ class CustomerApiController extends Controller
         }
     }
 
-
-    // Function for Check Payment Status
-    public function checkPhonepePaymentStatus($transaction_id)
-    {
-        $admin_settings = getAdminSettings();
-        $phonepe_live = (isset($admin_settings['phonepe_live']) && !empty($admin_settings['phonepe_live'])) ? $admin_settings['phonepe_live'] : 0;
-
-        if ($phonepe_live == 1) {
-            $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_live_merchant_id'])) ? $admin_settings['phonepe_live_merchant_id'] : '';
-            $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_live_salt_key'])) ? $admin_settings['phonepe_live_salt_key'] : '';
-        } else {
-            $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_sandbox_merchant_id'])) ? $admin_settings['phonepe_sandbox_merchant_id'] : '';
-            $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_sandbox_salt_key'])) ? $admin_settings['phonepe_sandbox_salt_key'] : '';
-        }
-
-        $saltKey = $phonepe_cred['salt_key'];
-        $saltIndex = 1;
-        $finalXHeader = hash('sha256', '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id . '' . $saltKey) . '###' . $saltIndex;
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id . '',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json',
-                'accept: application/json',
-                'X-VERIFY: ' . $finalXHeader,
-                'X-MERCHANT-ID: ' . $transaction_id
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        curl_close($curl);
-
-        return json_decode($response);
-    }
+       // Function for Check Payment Status
+       public function checkPhonepePaymentStatus($transaction_id)
+       {
+           $admin_settings = getAdminSettings();
+           $phonepe_live = (isset($admin_settings['phonepe_live']) && !empty($admin_settings['phonepe_live'])) ? $admin_settings['phonepe_live'] : 0;
+   
+           if ($phonepe_live == 1) {
+               $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_live_merchant_id'])) ? $admin_settings['phonepe_live_merchant_id'] : '';
+               $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_live_salt_key'])) ? $admin_settings['phonepe_live_salt_key'] : '';
+               $phonepe_url = 'https://api.phonepe.com/apis/hermes/pg/v1/status/';
+           } else {
+               $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_sandbox_merchant_id'])) ? $admin_settings['phonepe_sandbox_merchant_id'] : '';
+               $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_sandbox_salt_key'])) ? $admin_settings['phonepe_sandbox_salt_key'] : '';
+               $phonepe_url = 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/';
+           }
+   
+           $saltKey = $phonepe_cred['salt_key'];
+           $saltIndex = 1;
+           $path = '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id;
+           $finalXHeader = hash('sha256', $path . $saltKey) . '###' . $saltIndex;
+           
+           $curl = curl_init();
+           curl_setopt_array($curl, array(
+               CURLOPT_URL => $phonepe_url . $phonepe_cred['merchant_id'] . '/' . $transaction_id,
+               CURLOPT_RETURNTRANSFER => true,
+               CURLOPT_ENCODING => '',
+               CURLOPT_MAXREDIRS => 10,
+               CURLOPT_TIMEOUT => 0,
+               CURLOPT_FOLLOWLOCATION => false,
+               CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+               CURLOPT_CUSTOMREQUEST => 'GET',
+               CURLOPT_HTTPHEADER => array(
+                   'Content-Type: application/json',
+                   'accept: application/json',
+                   'X-VERIFY: ' . $finalXHeader,
+                   'X-MERCHANT-ID: ' . $phonepe_cred['merchant_id']
+               ),
+           ));
+   
+           $response = curl_exec($curl);
+           curl_close($curl);
+   
+           return json_decode($response);
+       }
 
     // function for Get All States
     public function getStateCities(Request $request)
