@@ -181,7 +181,8 @@ class AdminSettingsController extends Controller
             "StockStatus" => "",
             "FilterType" => "",
             "DoNotShowInClientApp" => "",
-            "HasTagImage" => ""
+            "HasTagImage" => "",
+            "CommaSeperate_CompanyID"=> "1,4",
         ];
 
         // Set the POST data

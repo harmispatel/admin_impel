@@ -36,7 +36,7 @@
                         </tr>
                         <tr>
                             <th width="25%">Date</th>
-                            <td>{{ $woman_club_request->date }}</td>
+                            <td>{{ isset($woman_club_request->created_at) ? $woman_club_request->created_at->format('d M Y') : '' }}</td>
                         </tr>
                         <tr>
                             <th width="25%">Mobile No.</th>
