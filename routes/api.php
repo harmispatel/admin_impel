@@ -181,3 +181,4 @@ Route::post('ready-to-dispatch-price', [CustomerApiController::class, 'readyToDi
 
 Route::post('send-otp-login', [CustomerApiController::class, 'SendLoginOtp']);
 Route::post('login-with-otp', [CustomerApiController::class, 'loginWithOtp']);
+// Route::post('send-otp-order-confirm', [CustomerApiController::class, 'SendOrderConfirmOtp']);
