@@ -29,19 +29,35 @@
 
                                 @can('orders.accept')
                                     @if(isset($order->order_status) && $order->order_status == 'pending')
-                                        <a onclick="processOrder('accepted', {{ $order->id }})" class="mb-2 btn btn-sm btn-info text-white"><strong>ACCEPT</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                        <a id="accepted" onclick="processOrder('accepted', {{ $order->id }})" class="mb-2 btn btn-sm btn-info text-white"><strong>ACCEPT</strong> <i class="fa-solid fa-check-circle"></i></a>
+
+                                        <button class="mb-2 btn-sm btn btn-primary" type="button" disabled style="display: none;">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Accepting...
+                                        </button>
                                     @endif
                                 @endcan
 
                                 @can('orders.process')
                                     @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted'))
-                                        <a onclick="processOrder('processing', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-primary"><strong>PROCESS</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                        <a id="processing" onclick="processOrder('processing', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-primary"><strong>PROCESS</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                        
+                                        <button class="mb-2 btn-sm btn btn-primary" type="button" disabled style="display: none;">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Processing...
+                                        </button>
+
                                     @endif
                                 @endcan
 
                                 @can('orders.complete')
                                     @if(isset($order->order_status) && ($order->order_status == 'pending' || $order->order_status == 'accepted' || $order->order_status == 'processing'))
-                                        <a onclick="processOrder('completed', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>COMPLETE</strong> <i class="fa-solid fa-check-circle"></i></a>
+                                        <a id="completed" onclick="processOrder('completed', {{ $order->id }})" class="ms-1 mb-2 btn btn-sm btn-success"><strong>COMPLETE</strong> <i class="fa-solid fa-check-circle"></i></a>
+
+                                        <button class="mb-2 btn-sm btn btn-primary" type="button" disabled style="display: none;">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Completing...
+                                        </button>
                                     @endif
                                 @endcan
 
@@ -275,7 +291,6 @@
             </div>
         </div>
     </section>
-
 @endsection
 
 @section('page-js')
@@ -291,9 +306,18 @@
                 "status": status,
                 'id': id,
             },
+            beforeSend: function(){
+                   $('#' + status).siblings('button').first().show();
+                   $('#' + status).hide();
+                    
+            },
             dataType: "JSON",
             success: function (response) {
                 if(response.success == true){
+
+                    $('#' + status).siblings('button').first().hide();
+                    $('#' + status).show();
+
                     toastr.success(response.message);
                     setTimeout(() => {
                         location.reload();

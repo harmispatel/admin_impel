@@ -2581,5 +2581,28 @@ class CustomerApiController extends Controller
     //         dd($th);
     //     }
     // }
+
+    // public function TrackOrder(Request $request)
+    // {
+    //     try {
+    //         $token = "d55c9549f11637d0ad4d2808ffc3fcaa";
+    //         $docket = "0562578844";
+
+    //         $response = Http::post('https://test.sequel247.com/api/track', [
+    //             'token' => $token,
+    //             'docket' => $docket
+    //         ]);
+
+    //         //$response = $request->send();
+
+    //         return response()->json([
+    //             // 'message' => 'Tracking data received',
+    //             'external_response' => $response->json(),
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         //throw $th;
+    //         dd($th);
+    //     }
+    // }
     
 }

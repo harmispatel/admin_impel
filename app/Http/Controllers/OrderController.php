@@ -335,6 +335,47 @@ class OrderController extends Controller
         }
     }
 
+    public function ReadyToOrderProcess(Request $request)
+    {
+        try {
+            $order_id = $request->id;
+            $order_status = $request->status;
+            $order = ReadyOrder::find($order_id);
+
+            if(isset($order->id)){
+
+                $order->order_status = $order_status;
+                $order->update();
+
+                $message = "";
+                if($order_status == 'accepted'){
+                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $message = "Order has been Accepted.";
+                }elseif($order_status == 'processing'){
+                    $message = "Order has been Send to Processing.";
+                }elseif($order_status == 'completed'){
+                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $message = "Order has been Completed.";
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                ]);
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => '404, Order Not Found!',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Oops, Something went wrong!',
+            ]);
+        }
+    }
+
     public function SendOrderConfirmOtp($order,$order_status)
     {
         $user = User::where('id',$order->user_id)->first();
@@ -346,7 +387,7 @@ class OrderController extends Controller
         }
 
         if($order_status == "completed"){
-            $text = "Thank you for your order confirmation with impel. This is your order details - {$order_id}. You will get your Product Shortly. Once your order Dispatch, you will receive shipment Details.";
+            $text = "Thank you for your order confirmation with IMPEL. This is your order details - {$order_id}. You will get your Product Shortly. Once your order Dispatch, you will receive shipment Details.";
             $dlttemplateid = 1707172906247543141;
             $subject = "Order Completed";
         }
@@ -400,52 +441,22 @@ class OrderController extends Controller
 
         if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
         {
-            Mail::send('mail.confirm_order',['title' => $text,'order_id' => $order_id,'user' => $user],function ($message) use ($user,$subject) {
-                        $message->from(env('MAIL_USERNAME'));
-                        $message->to($user->email);
-                        $message->subject($subject);
-                    });
-        }
-    }
-
-    public function ReadyToOrderProcess(Request $request)
-    {
-        try {
-            $order_id = $request->id;
-            $order_status = $request->status;
-            $order = ReadyOrder::find($order_id);
-
-            if(isset($order->id)){
-
-                $order->order_status = $order_status;
-                $order->update();
-
-                $message = "";
-                if($order_status == 'accepted'){
-                    $message = "Order has been Accepted.";
-                }elseif($order_status == 'processing'){
-                    $message = "Order has been Send to Processing.";
-                }elseif($order_status == 'completed'){
-                    $message = "Order has been Completed.";
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $message,
-                ]);
-            }else{
+            try {
+                Mail::send('mail.confirm_order',['title' => $text,'order_id' => $order_id,'user' => $user],function ($message) use ($user,$subject) {
+                    $message->from(env('MAIL_USERNAME'));
+                    $message->to($user->email);
+                    $message->subject($subject);
+                });
+            } catch (\Throwable $th) {
                 return response()->json([
                     'success' => false,
-                    'message' => '404, Order Not Found!',
+                    'message' => 'Mail Not Send!',
                 ]);
             }
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Oops, Something went wrong!',
-            ]);
+            
         }
     }
+
 
 
     public function ReadyToOrderPaid(Request $request)
