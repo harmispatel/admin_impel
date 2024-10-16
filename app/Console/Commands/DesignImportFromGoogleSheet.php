@@ -9,6 +9,7 @@ use App\Models\Category;
 use Google_Client;
 use Google_Service_Sheets;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class DesignImportFromGoogleSheet extends Command
 {
@@ -159,15 +160,25 @@ class DesignImportFromGoogleSheet extends Command
                             $input['video'] = $design_no.'.mp4';
                             $input['description'] = (isset($item[27])) ? $item[27] : '';
 
-                            // Gross Weight
-                            $gross_weight_22k = (isset($item[20])) ? $item[20] : 0;
-                            $gross_weight_20k = (isset($item[21])) ? $item[21] : 0;
-                            $gross_weight_18k = (isset($item[22])) ? $item[22] : 0;
-                            $gross_weight_14k = (isset($item[23])) ? $item[23] : 0;
+                            // // Gross Weight
+                            // $gross_weight_22k = (isset($item[20])) ? $item[20] : 0;
+                            // $gross_weight_20k = (isset($item[21])) ? $item[21] : 0;
+                            // $gross_weight_18k = (isset($item[22])) ? $item[22] : 0;
+                            // $gross_weight_14k = (isset($item[23])) ? $item[23] : 0;
 
+                            // // Stone
+                            // $total_gem_stone_waight = (isset($item[30])) ? $item[30] : 0;
+                            // $total_cz_waight = (isset($item[29])) ? $item[29] : 0;
+
+                            // Gross Weight
+                            $gross_weight_22k = floatval(isset($item[20]) ? $item[20] : 0);
+                            $gross_weight_20k = floatval(isset($item[21]) ? $item[21] : 0);
+                            $gross_weight_18k = floatval(isset($item[22]) ? $item[22] : 0);
+                            $gross_weight_14k = floatval(isset($item[23]) ? $item[23] : 0);
+                            
                             // Stone
-                            $total_gem_stone_waight = (isset($item[30])) ? $item[30] : 0;
-                            $total_cz_waight = (isset($item[29])) ? $item[29] : 0;
+                            $total_gem_stone_waight = floatval(isset($item[30]) ? $item[30] : 0);
+                            $total_cz_waight = floatval(isset($item[29]) ? $item[29] : 0);
 
                             // Net Weight
                             $net_weight_14k = number_format($gross_weight_14k - $total_gem_stone_waight - $total_cz_waight,2);
@@ -209,7 +220,8 @@ class DesignImportFromGoogleSheet extends Command
                             $input['total_price_20k'] = (isset($item[81]) && !empty($item[81])) ? $item[81] : 0.00;
                             $input['total_price_18k'] = (isset($item[82]) && !empty($item[82])) ? $item[82] : 0.00;
                             $input['total_price_14k'] = (isset($item[83]) && !empty($item[83])) ? $item[83] : 0.00;
-
+                            
+                            
                             if(!empty($design_id) || $design_id != ''){
                                 // Update Design
                                 $update_design = Design::find($design_id)->update($input);

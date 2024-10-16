@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\ReadyOrder;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -306,6 +308,7 @@ class OrderController extends Controller
                 $message = "";
                 if($order_status == 'accepted'){
                     $message = "Order has been Accepted.";
+                    $this->SendOrderConfirmOtp($order);
                 }elseif($order_status == 'processing'){
                     $message = "Order has been Send to Processing.";
                 }elseif($order_status == 'completed'){
@@ -326,6 +329,101 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Oops, Something went wrong!',
+            ]);
+        }
+    }
+
+    public function SendOrderConfirmOtp($order)
+    {
+        try {
+            
+            $user = User::where('id',$order->user_id)->first();
+            $order_id = $order->id;
+
+            $curl = curl_init();
+            $APIKey = 'q9o165ctikCFWUQWnqLBww';
+            $senderid = 'IMPELE';
+            $channel = 2;
+            $DCS = 0;
+            $flashsms = 0;
+            $text = "Thank you for Purchasing Order from impel. This is order id - {$order_id}";
+            $route = 31;
+            $EntityId = 1701172630214402951;
+            $dlttemplateid = 1707172899343565302;
+    
+            // Set the POST URL
+            $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+    
+            // Set the query parameters
+            $queryParams = http_build_query([
+                'APIKey' => $APIKey,
+                'senderid' => $senderid,
+                'channel' => $channel,
+                'DCS' => $DCS,
+                'flashsms' => $flashsms,
+                'number' => $user->phone,
+                'text' => $text,
+                'route' => $route,
+                'EntityId' => $EntityId,
+                'dlttemplateid' => $dlttemplateid
+            ]);
+    
+            // Set curl options
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url.'?' . $queryParams,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_CONNECTTIMEOUT => 10,
+            ]);
+    
+            // Execute the request
+            $response = curl_exec($curl);
+    
+            // Check for errors
+            if (curl_errno($curl)) {
+                $error = curl_error($curl);
+                curl_close($curl);
+                return response()->json(['error' => $error], 500);
+            }
+    
+            // Close cURL
+            curl_close($curl);
+            $responseData = json_decode($response, true);
+
+                if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
+                {
+                    if(!empty($user)){
+                            if (!empty($user)) {
+                                Mail::send('mail.confirm_order',['title' => $text,'order_id' => $order_id,'user' => $user],
+                                function ($message) use ($user) {
+                                    $message->from(env('MAIL_USERNAME'));
+                                    $message->to($user->email);
+                                    $message->subject('Order Confirmation');
+                                });
+                            } 
+
+                            return response()->json([
+                                'status' => true,
+                                'message' => "Message Send Successfully"
+                            ]);
+                    }
+                    return response()->json([
+                        'status' => false,
+                        'message' => "User Not Found"
+                    ]);
+                }
+                else
+                {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $responseData
+                    ]);
+                }
+        } catch (\Throwable $th) {
+            dd($th);
+            return response()->json([
+                'status' => false,
+                'message' => "Internal Server Error"
             ]);
         }
     }
