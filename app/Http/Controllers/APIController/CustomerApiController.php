@@ -2511,7 +2511,12 @@ class CustomerApiController extends Controller
     {
         $curl = curl_init();
         $url = 'https://test.sequel247.com/api/checkServiceability';
-        $data = json_encode($request->all());
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "pin_code" => $request->pin_code
+        ];
+        
+        $data = json_encode($data);
 
         // Set curl options
         curl_setopt_array($curl, [
