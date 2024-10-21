@@ -184,3 +184,10 @@ Route::post('send-otp-login', [CustomerApiController::class, 'SendLoginOtp']);
 Route::post('login-with-otp', [CustomerApiController::class, 'loginWithOtp']);
 
 Route::post('check-service-ability', [CustomerApiController::class,'checkServiceability']);
+
+//PDF
+Route::post('add-pdf-design', [CustomerApiController::class,'addPdfDesign']);
+
+Route::post('pdf-design-list', [CustomerApiController::class,'listPdfDesign']);
+
+Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign']);

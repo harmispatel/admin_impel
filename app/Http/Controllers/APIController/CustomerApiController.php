@@ -11,8 +11,8 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, ReadyOrder, ReadyOrderItem, UserOtp};
-use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, StateCitiesResource, TestimonialsCollection};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ReadyOrder, ReadyOrderItem, UserOtp};
+use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
 use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
@@ -2538,5 +2538,82 @@ class CustomerApiController extends Controller
         }
         curl_close($curl);
         return $response;
+    }
+
+    //PDF
+    public function addPdfDesign(Request $request)
+    {
+        try {
+            $design_id = $request->design_id;
+            $email = $request->email;
+
+            $user = User::where('email',$email)->first();
+
+            $pdf = new DesignPdf();
+            $pdf->design_id = $design_id;
+            $pdf->user_id = $user->id;
+            $pdf->save();
+
+            return response()->json([
+                'status'=>true,
+                'message'=> "Desgin Added Successfully"
+            ]);
+
+        } catch (\Throwable $th) {
+            //throw $th;
+            return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+        }
+    }
+
+    public function listPdfDesign(Request $request)
+    {
+        try {
+            $email = $request->email;
+            $user = User::where('email', $email)->first();
+
+            if (isset($user->id)) {
+                $collection = DesignPdf::where('user_id', $user->id)->with('designs')->get();
+                $data = new DesignCollectionPDFListResource($collection);
+                return $this->sendApiResponse(true, 0, 'User PDF Loaded SuccessFully', $data);
+            }
+            else {
+                return $this->sendApiResponse(false, 0, 'User not Found!', (object)[]);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'PDF Design Get Successfully'
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return $this->sendApiResponse(false, 0, 'Failed to Load Collection Design!', (object)[]);
+        }
+    }
+
+    public function removePdfDesign(Request $request)
+    {
+        try {
+            $email = $request->email;
+            $designId = $request->design_id;
+            $user = User::where('email', $email)->first();
+            $userId = $user->id;
+
+            $pdf = DesignPdf::where('user_id', $userId)->where('design_id', $designId)->first();
+            if ($pdf) {
+                $deletepdfdesign = DesignPdf::find($pdf->id);
+                $deletepdfdesign->delete();
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Remove Design SuccessFully'
+                    ]);
+            } else {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Design in pdf Not Found'
+                    ]);
+            }
+        } catch (\Throwable $th) {
+            return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+        }
     }
 }
