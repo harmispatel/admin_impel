@@ -2540,6 +2540,264 @@ class CustomerApiController extends Controller
         return $response;
     }
 
+    //sequal api order
+    public function CreateAddress()
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/create_address";
+
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "address_type" => "Business",
+            "address_short_code" => "BOM4",
+            "nature_of_address" => "Warehouse / Distribution Center",
+            "gst_in" => "22AAAAA0000A1Z5",
+            "business_entity_name" => "M/s XYZ Limited",
+            "address_line1" => "First floor XYZ",
+            "address_line2" => "Store No. 101",
+            "pinCode" => "110001",
+            "auth_receiver_name" => "Manoj Aggarwal",
+            "auth_receiver_phone" => "9898XXXXXX",
+            "auth_receiver_email" => "seq_dummy_api@gmail.com"
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
+        ]);
+
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_error($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
+    //caculate delevry time
+    public function CalculateEstimatedDeliveryDate(Request $request)
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/shipment/calculateEDD";
+
+        $data = [
+            "origin_pincode" => "590001", 
+            "destination_pincode" => $request->destination_pincode, //user pincode "560078"
+            "pickup_date" => $request->pickup_date,  //"17-06-09"
+            "token" => "7f95ea03824896aed84914ef6ec57a31"
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
+        ]);
+
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_errno($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
+    //cancel delivery
+    public function CancelDelivery(Request $request)
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/cancel";
+
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "docket" => $request->docket,             //"0584392611"
+            "cancelReason"  => $request->cancelReason         //"Pickup not ready"
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10
+        ]);
+
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_errno($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
+    // genrate docate and create shipmant
+    public function shipmentCreate(Request $request)
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/shipment/create";
+        $uniqueId = uniqid();
+
+        $boxes = [];
+        
+        for ($i = 0; $i < $request->no_of_packages; $i++) {
+            $boxes[] = [
+                "box_number" => "ZV_" . $uniqueId . "_00" . ($i + 1), // Dynamically generate box number
+                "lock_number" => $request->boxes[$i]['lock_number'] ?? 'LK_DEFAULT',  // Dynamic lock number or default
+                "length" => $request->boxes[$i]['length'],     // Length for this box
+                "breadth" => $request->boxes[$i]['breadth'],   // Breadth for this box
+                "height" => $request->boxes[$i]['height'],     // Height for this box
+                "gross_weight" => $request->boxes[$i]['gross_weight']  // Gross weight for this box
+            ];
+        }
+    
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "location" => "domestic",
+            "shipmentType" => "D&J",
+            "serviceType" => "valuable",
+            "fromStoreCode" => "AMDIMPEL",
+            "toAddress" => [
+                "consignee_name" => $request->consignee_name,      //"Siddhartha K",
+                "address_line1" => $request->address_line1,       //"House No=> 3405, Gondhali",
+                "address_line2" => $request->address_line2,       //"Galli",
+                "pinCode" => $request->pinCode,             //"590001",
+                "auth_receiver_name" => $request->auth_receiver_name,  //"Ketan",
+                "auth_receiver_phone" => $request->auth_receiver_phone, //"98XXXXXXXX"
+            ],
+            "net_weight" => $request->net_weight,      // "10",
+            "gross_weight" => $request->net_weight,    // "23",
+            "net_value" => $request->net_weight,       // "454645", Net Value of the shipment
+            "codValue" => $request->net_weight,        // "49999", Cash on delivery value (max INR. 50,000)
+            "no_of_packages" =>$request->no_of_packages,                         //"2",
+            "boxes" => $boxes,
+            "invoice" => [
+                "764545465",
+                "4658794564",
+                "89465w"
+            ],
+            "remark" => "Handle with care"
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_errno($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
+    public function DeliveryProof(Request $request)
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/podDownload";
+
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "requestType" => $request->requestType,                   // "docket",
+            "dockets" => [
+                $request->dockets                                // ["0661232999"],
+            ],                   
+            "fromDate" => $request->fromDate,                   // "2019-11-28",
+            "toDate" => $request->toDate                   // "2024-10-23"
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_errno($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
+    //track order
+    public function DeliveryTrack(Request $request)
+    {
+        $curl = curl_init();
+        $url = "https://test.sequel247.com/api/track";
+
+        $data = [
+            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "docket" => $request->docket
+        ];
+
+        $data = json_encode($data);
+        curl_setopt_array($curl,[
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($curl);
+        if(curl_errno($curl)){
+            $error = curl_errno($curl);
+            curl_close($curl);
+            return $error;
+        }
+        curl_close($curl);
+        return $response;
+    }
+
     //PDF
     public function addPdfDesign(Request $request)
     {
@@ -2548,10 +2806,15 @@ class CustomerApiController extends Controller
             $email = $request->email;
 
             $user = User::where('email',$email)->first();
-
             $pdf = new DesignPdf();
-            $pdf->design_id = $design_id;
+            
             $pdf->user_id = $user->id;
+            $pdf->type = $request->type;
+            if($request->type == "make_by_order"){
+                $pdf->design_id = $design_id;
+            }else{
+                $pdf->tag_no = $request->tag_no;
+            }
             $pdf->save();
 
             return response()->json([
@@ -2561,6 +2824,7 @@ class CustomerApiController extends Controller
 
         } catch (\Throwable $th) {
             //throw $th;
+            dd($th);
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
     }
@@ -2586,9 +2850,69 @@ class CustomerApiController extends Controller
             ]);
         } catch (\Throwable $th) {
             //throw $th;
+            dd($th);
             return $this->sendApiResponse(false, 0, 'Failed to Load Collection Design!', (object)[]);
         }
     }
+
+    // public function listPdfDesign(Request $request)
+    // {
+    //     try {
+    //         $email = $request->email;
+    //         $user = User::where('email', $email)->first();
+
+    //         if (isset($user->id)) {
+    //             if($request->type == "make_by_order"){
+    //                 $collection = DesignPdf::where('user_id', $user->id)->with('designs')->get();
+    //                 $data = new DesignCollectionPDFListResource($collection);
+    //             }
+    //             // else{
+                   
+    //             //     $designdata = DesignPdf::where('user_id', $user->id)->where('type','ready_to_dispatch')->get();
+            
+    //             //         $curl = curl_init();
+    //             //         $url = 'https://api.indianjewelcast.com/api/Tag/GetInfo?TagNo='.$tag_no;
+                
+    //             //         // Set the POST data
+    //             //         $data = json_encode($request->all());
+                
+    //             //         curl_setopt_array($curl, [
+    //             //             CURLOPT_URL => $url,
+    //             //             CURLOPT_RETURNTRANSFER => true,
+    //             //             CURLOPT_POST => true,
+    //             //             CURLOPT_POSTFIELDS => $data,
+    //             //             CURLOPT_HTTPHEADER => [
+    //             //                 'Content-Type: application/json',
+    //             //             ],
+    //             //             CURLOPT_TIMEOUT => 30,
+    //             //             CURLOPT_CONNECTTIMEOUT => 10,
+    //             //         ]);
+    //             //         $data = curl_exec($curl);
+                
+    //             //         // Check for errors
+    //             //         if (curl_errno($curl)) {
+    //             //             $error = curl_error($curl);
+    //             //             curl_close($curl);
+    //             //             return $error;
+    //             //         }
+    //             //         curl_close($curl);
+    //             //         return $data;
+    //             // }
+    //             return $this->sendApiResponse(true, 0, 'User PDF Loaded SuccessFully', $data);
+    //         }
+    //         else {
+    //             return $this->sendApiResponse(false, 0, 'User not Found!', (object)[]);
+    //         }
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'PDF Design Get Successfully'
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         //throw $th;
+    //         return $this->sendApiResponse(false, 0, 'Failed to Load Collection Design!', (object)[]);
+    //     }
+    // }
 
     public function removePdfDesign(Request $request)
     {

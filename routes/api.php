@@ -191,3 +191,14 @@ Route::post('add-pdf-design', [CustomerApiController::class,'addPdfDesign']);
 Route::post('pdf-design-list', [CustomerApiController::class,'listPdfDesign']);
 
 Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign']);
+
+
+//seqaul api order
+
+Route::post('create_address', [CustomerApiController::class,'CreateAddress']);
+Route::post('shipment/calculateEDD', [CustomerApiController::class,'CalculateEstimatedDeliveryDate']);
+Route::post('cancel-delivery', [CustomerApiController::class,'CancelDelivery']);
+Route::post('shipment-create', [CustomerApiController::class,'shipmentCreate']);
+
+Route::post('delivery-proof', [CustomerApiController::class,'DeliveryProof']);
+Route::post('delivery-track', [CustomerApiController::class,'DeliveryTrack']);
