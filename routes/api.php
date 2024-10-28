@@ -202,3 +202,9 @@ Route::post('shipment-create', [CustomerApiController::class,'shipmentCreate']);
 
 Route::post('delivery-proof', [CustomerApiController::class,'DeliveryProof']);
 Route::post('delivery-track', [CustomerApiController::class,'DeliveryTrack']);
+
+
+//ready to dispatch pdf
+Route::post('ready-to-pdf-store', [CustomerApiController::class,'ReadyToPdf']);
+Route::post('ready-to-pdf-list', [CustomerApiController::class,'ReadtToPdfList']);
+Route::post('ready-to-pdf-delete', [CustomerApiController::class,'readyPdfRemove']);

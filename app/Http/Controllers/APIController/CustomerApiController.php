@@ -11,8 +11,8 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ReadyOrder, ReadyOrderItem, UserOtp};
-use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, StateCitiesResource, TestimonialsCollection};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ReadyOrder, ReadyOrderItem, ReadyToPdf, UserOtp};
+use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, ReadyPdfListResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
 use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
@@ -2806,15 +2806,11 @@ class CustomerApiController extends Controller
             $email = $request->email;
 
             $user = User::where('email',$email)->first();
-            $pdf = new DesignPdf();
             
+            $pdf = new DesignPdf();
             $pdf->user_id = $user->id;
             $pdf->type = $request->type;
-            if($request->type == "make_by_order"){
-                $pdf->design_id = $design_id;
-            }else{
-                $pdf->tag_no = $request->tag_no;
-            }
+            $pdf->design_id = $design_id;
             $pdf->save();
 
             return response()->json([
@@ -2823,8 +2819,6 @@ class CustomerApiController extends Controller
             ]);
 
         } catch (\Throwable $th) {
-            //throw $th;
-            dd($th);
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
     }
@@ -2855,65 +2849,6 @@ class CustomerApiController extends Controller
         }
     }
 
-    // public function listPdfDesign(Request $request)
-    // {
-    //     try {
-    //         $email = $request->email;
-    //         $user = User::where('email', $email)->first();
-
-    //         if (isset($user->id)) {
-    //             if($request->type == "make_by_order"){
-    //                 $collection = DesignPdf::where('user_id', $user->id)->with('designs')->get();
-    //                 $data = new DesignCollectionPDFListResource($collection);
-    //             }
-    //             // else{
-                   
-    //             //     $designdata = DesignPdf::where('user_id', $user->id)->where('type','ready_to_dispatch')->get();
-            
-    //             //         $curl = curl_init();
-    //             //         $url = 'https://api.indianjewelcast.com/api/Tag/GetInfo?TagNo='.$tag_no;
-                
-    //             //         // Set the POST data
-    //             //         $data = json_encode($request->all());
-                
-    //             //         curl_setopt_array($curl, [
-    //             //             CURLOPT_URL => $url,
-    //             //             CURLOPT_RETURNTRANSFER => true,
-    //             //             CURLOPT_POST => true,
-    //             //             CURLOPT_POSTFIELDS => $data,
-    //             //             CURLOPT_HTTPHEADER => [
-    //             //                 'Content-Type: application/json',
-    //             //             ],
-    //             //             CURLOPT_TIMEOUT => 30,
-    //             //             CURLOPT_CONNECTTIMEOUT => 10,
-    //             //         ]);
-    //             //         $data = curl_exec($curl);
-                
-    //             //         // Check for errors
-    //             //         if (curl_errno($curl)) {
-    //             //             $error = curl_error($curl);
-    //             //             curl_close($curl);
-    //             //             return $error;
-    //             //         }
-    //             //         curl_close($curl);
-    //             //         return $data;
-    //             // }
-    //             return $this->sendApiResponse(true, 0, 'User PDF Loaded SuccessFully', $data);
-    //         }
-    //         else {
-    //             return $this->sendApiResponse(false, 0, 'User not Found!', (object)[]);
-    //         }
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'PDF Design Get Successfully'
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         //throw $th;
-    //         return $this->sendApiResponse(false, 0, 'Failed to Load Collection Design!', (object)[]);
-    //     }
-    // }
-
     public function removePdfDesign(Request $request)
     {
         try {
@@ -2940,4 +2875,115 @@ class CustomerApiController extends Controller
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
     }
+
+    public function ReadyToPdf(Request $request)
+    {
+        $validatedData = Validator::make($request->all(), [
+            'phone' => 'required|exists:users,phone',
+            'company_id' => 'required',
+            'item_group_id' => 'required',
+            'item_id' => 'required',
+            'sub_item_id' => 'required',
+            'style_id' => 'required',
+            'metal_value' => 'required|gt:0',
+        ],[
+            'metal_value.gt' => 'Price is not valid!'
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validatedData->errors()->first()
+            ]);
+        }
+
+        $user =  User::where('phone', $request->phone)->first();
+
+        $input = [
+            'user_id' => $user->id,
+            'company_id' => $request->company_id,
+            'item_group_id' => $request->item_group_id,
+            'item_id' => $request->item_id,
+            'sub_item_id' => $request->sub_item_id,
+            'style_id' => $request->style_id,
+            'barcode' => $request->barcode ?? "",
+            'tag_no' => $request->tag_no ?? "",
+            'group_name' => $request->group_name ?? "",
+            'name' => $request->name ?? "",
+            'size'=> $request->size ?? "",
+            'gross_weight'=> $request->gross_weight ?? "",
+            'net_weight'=> $request->net_weight ?? "",
+            'metal_value'=> $request->metal_value ?? 0,
+            'making_charge'=> $request->making_charge ?? 0,
+            'making_charge_discount'=> $request->making_charge_discount ?? 0,
+            'total_amount'=> $request->total_amount ?? 0,
+        ];
+
+        $is_exists = ReadyToPdf::where('user_id', $user->id)->where('tag_no', $request->tag_no)->first();
+
+        if (isset($is_exists->id) && !empty($is_exists->id)) {
+            return response()->json([
+                'status' => false,
+                "message" => "Design has already exists in Your PDF List"
+            ]);
+        } else {
+            ReadyToPdf::create($input);
+            return response()->json([
+                'status' => true,
+                "message" => "Design has been Added to PDF List."
+            ]);
+        }
+    }
+
+    public function ReadtToPdfList(Request $request)
+    {
+        try {
+            $validatedData = Validator::make($request->all(), [
+                'phone' => 'required|exists:users,phone',
+            ]);
+
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
+            }
+
+            $user = User::where('phone', $request->phone)->first();
+
+            $pdf_data['readytopdf'] =  ReadyToPdf::where('user_id', $user->id)->get();
+            $data = new ReadyPdfListResource($pdf_data);
+            return $this->sendApiResponse(true, 0, 'PDF Items Fetched.', $data);
+        } catch (\Throwable $th) {
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
+        }
+    }
+
+    public function readyPdfRemove(Request $request)
+    {
+        try {
+            $validatedData = Validator::make($request->all(), [
+                'ready_pdf_id' => 'required|exists:ready_to_pdfs,id',
+            ]);
+
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
+            }
+            
+            $pdf_item = ReadyToPdf::where('id', $request->ready_pdf_id)->first();
+            $pdf_item->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Remove Design SuccessFully'
+            ]);
+        } catch (\Throwable $th) {
+            dd($th);
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
+        }
+    }
+
 }
