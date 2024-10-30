@@ -1424,6 +1424,7 @@ class CustomerApiController extends Controller
                         $order->payment_method = 'phonepe';
                         $order->advance_payment = (isset($transaction->data->amount)) ? $transaction->data->amount : 0;
                         $order->payment_instrument = (isset($transaction->data->paymentInstrument)) ? serialize($transaction->data->paymentInstrument) : "";
+                        $order->docate_number = (isset($request->docate_number)) ? $request->docate_number : "";
                         $order->save();
 
                         if ($order->id) {
@@ -2148,6 +2149,7 @@ class CustomerApiController extends Controller
                         'total' => $total,
                         'payment_status' => 0,
                         'payment_method' => 'cash',
+                        'docate_number' => isset($request->docate_number) ? $request->docate_number : '',
                     ];
                     
                     $new_order = ReadyOrder::create($order_input);
@@ -2237,6 +2239,7 @@ class CustomerApiController extends Controller
                                 'payment_method' => 'phonepe',
                                 'transaction_id' => (isset($transaction->data->transactionId)) ? $transaction->data->transactionId : "",
                                 'merchant_transaction_id' => (isset($transaction->data->merchantTransactionId)) ? $transaction->data->merchantTransactionId : "",
+                                'docate_number' => isset($request->docate_number) ? $request->docate_number : '',
                             ];
                             $new_order = ReadyOrder::create($order_input);
 
@@ -2795,8 +2798,100 @@ class CustomerApiController extends Controller
             return $error;
         }
         curl_close($curl);
+
+        $responseData = json_decode($response);
+        
+        $email = $request->email;
+        $order_id = $request->order_id;
+        $time_date = $responseData->data->tracking[0]->date_time;
+        $status = $responseData->data->tracking[0]->code;
+       
+        if ($status == 'SDELVD') {
+
+            $text = "Dear customer your Order no - #({$order_id}) Delivered at ({$time_date}). See you soon again";
+            $subject = "Order Delivered Confirmation";
+
+            Mail::send('mail.complated_order',['title' => $text],function ($message) use ($email,$subject) {
+                $message->from(env('MAIL_USERNAME'));
+                $message->to($email);
+                $message->subject($subject);
+            });
+        }
         return $response;
     }
+
+    // public function SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status)
+    // {
+    //     $text = "Dear customer your Order no - #({$order_id}) Delivered at ({$time_date}). See you soon again";
+
+    //     $dlttemplateid = 1707172899343565302;
+    //     $subject = "Order Delivered Confirmation";
+        
+    //     $curl = curl_init();
+    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
+    //     $senderid = 'IMPELE';
+    //     $channel = 2;
+    //     $DCS = 0;
+    //     $flashsms = 0;
+    //     $route = 31;
+    //     $EntityId = 1701172630214402951;
+    //     // Set the POST URL
+    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+
+    //     // Set the query parameters
+    //     $queryParams = http_build_query([
+    //         'APIKey' => $APIKey,
+    //         'senderid' => $senderid,
+    //         'channel' => $channel,
+    //         'DCS' => $DCS,
+    //         'flashsms' => $flashsms,
+    //         'number' => $phone,
+    //         'text' => $text,
+    //         'route' => $route,
+    //         'EntityId' => $EntityId,
+    //         'dlttemplateid' => $dlttemplateid
+    //     ]);
+    
+    //     // Set curl options
+    //     curl_setopt_array($curl, [
+    //         CURLOPT_URL => $url.'?' . $queryParams,
+    //         CURLOPT_RETURNTRANSFER => true,
+    //         CURLOPT_TIMEOUT => 30,
+    //         CURLOPT_CONNECTTIMEOUT => 10,
+    //     ]);
+
+    //     // Execute the request
+    //     $response = curl_exec($curl);
+
+    //     // Check for errors
+    //     if (curl_errno($curl)) {
+    //         $error = curl_error($curl);
+    //         curl_close($curl);
+    //         return response()->json(['error' => $error], 500);
+    //     }
+
+    //     // Close cURL
+    //     curl_close($curl);
+    //     $responseData = json_decode($response, true);
+        
+    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
+    //     {
+    //         try {
+    //             if ($status == 'SDELVD') {
+    //                 Mail::send('mail.complated_order',['title' => $text],function ($message) use ($email,$subject) {
+    //                     $message->from(env('MAIL_USERNAME'));
+    //                     $message->to($email);
+    //                     $message->subject($subject);
+    //                 });
+    //             }
+    //         } catch (\Throwable $th) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Mail Not Send!',
+    //             ]);
+    //         }
+    //     }
+    // }
 
     //PDF
     public function addPdfDesign(Request $request)

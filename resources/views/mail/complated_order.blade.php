@@ -10,7 +10,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>SHIPMENT CREATE - IMPEL JEWELLERS</title>
+    <title>ORDER COMPLATED - IMPEL JEWELLERS</title>
 
 </head>
 
@@ -18,6 +18,7 @@
 
     <h3>{{ $title }}</h3>
     
+    <H4>From-IMPEL</H4>
 </body>
 
 </html>
