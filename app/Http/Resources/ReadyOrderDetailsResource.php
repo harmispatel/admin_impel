@@ -60,6 +60,7 @@ class ReadyOrderDetailsResource extends JsonResource
 
                 $item['order_id'] = $order_item['order_id'];
                 $item['dealer_id'] = $order_item['dealer_id'];
+                $item['sub_item_id'] = $order_item['sub_item_id'];
                 $item['design_name'] = $order_item['design_name'];
                 $item['quantity'] = intval($order_item['quantity']);
                 $item['barcode'] = $order_item['barcode'];

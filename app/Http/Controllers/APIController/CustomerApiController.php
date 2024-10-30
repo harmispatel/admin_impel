@@ -2162,6 +2162,7 @@ class CustomerApiController extends Controller
                                 $order_item_input = [
                                     'user_id' => $user->id ?? "",
                                     'dealer_id' => $dealer->id ?? NULL,
+                                    'sub_item_id' => $cart_item->sub_item_id ?? null,
                                     'order_id' => $new_order->id,
                                     'design_name' => $cart_item->name ?? "",
                                     'quantity' => $item_quantity,
@@ -2249,6 +2250,7 @@ class CustomerApiController extends Controller
                                         $order_item_input = [
                                             'user_id' => $user->id ?? "",
                                             'dealer_id' => $dealer->id ?? NULL,
+                                            'sub_item_id' => $cart_item->sub_item_id ?? null,
                                             'order_id' => $new_order->id,
                                             'design_name' => $cart_item->name ?? "",
                                             'quantity' => $item_quantity,
@@ -2696,9 +2698,7 @@ class CustomerApiController extends Controller
             "no_of_packages" =>$request->no_of_packages,                         //"2",
             "boxes" => $boxes,
             "invoice" => [
-                "764545465",
-                "4658794564",
-                "89465w"
+                ""
             ],
             "remark" => "Handle with care"
         ];
@@ -2809,13 +2809,12 @@ class CustomerApiController extends Controller
             
             $pdf = new DesignPdf();
             $pdf->user_id = $user->id;
-            $pdf->type = $request->type;
             $pdf->design_id = $design_id;
             $pdf->save();
 
             return response()->json([
                 'status'=>true,
-                'message'=> "Desgin Added Successfully"
+                'message'=> "design Added Successfully"
             ]);
 
         } catch (\Throwable $th) {
@@ -2879,15 +2878,15 @@ class CustomerApiController extends Controller
     public function ReadyToPdf(Request $request)
     {
         $validatedData = Validator::make($request->all(), [
-            'phone' => 'required|exists:users,phone',
+            'email' => 'required|exists:users,email',
             'company_id' => 'required',
             'item_group_id' => 'required',
             'item_id' => 'required',
             'sub_item_id' => 'required',
             'style_id' => 'required',
-            'metal_value' => 'required|gt:0',
+            'metal_value' => 'required',
         ],[
-            'metal_value.gt' => 'Price is not valid!'
+            // 'metal_value.gt' => 'Price is not valid!'
         ]);
 
         if ($validatedData->fails()) {
@@ -2897,7 +2896,7 @@ class CustomerApiController extends Controller
             ]);
         }
 
-        $user =  User::where('phone', $request->phone)->first();
+        $user =  User::where('email', $request->email)->first();
 
         $input = [
             'user_id' => $user->id,
@@ -2939,7 +2938,7 @@ class CustomerApiController extends Controller
     {
         try {
             $validatedData = Validator::make($request->all(), [
-                'phone' => 'required|exists:users,phone',
+                'email' => 'required|exists:users,email',
             ]);
 
             if ($validatedData->fails()) {
@@ -2949,7 +2948,7 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $user = User::where('phone', $request->phone)->first();
+            $user = User::where('email', $request->email)->first();
 
             $pdf_data['readytopdf'] =  ReadyToPdf::where('user_id', $user->id)->get();
             $data = new ReadyPdfListResource($pdf_data);
