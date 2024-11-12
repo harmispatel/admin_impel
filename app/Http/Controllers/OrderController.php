@@ -387,8 +387,10 @@ class OrderController extends Controller
         }
 
         if($order_status == "completed"){
-            $text = "Thank you for your order confirmation with IMPEL. This is your order details - {$order_id}. You will get your Product Shortly. Once your order Dispatch, you will receive shipment Details.";
-            $dlttemplateid = 1707172906247543141;
+            $link = "https://impel.store/ready-order-details/".$order_id;
+         
+            $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {#var#} From-IMPEL";
+            $dlttemplateid = 1707173132899016463;
             $subject = "Order Completed";
         }
 
