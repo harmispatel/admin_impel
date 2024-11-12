@@ -94,13 +94,15 @@ class SendDeliveryOrderStatusMessage extends Command
                       
                         $email = $order_detail->email;
                         $order_id = $order_detail->id;
-                        $time_date = $responseData->data->tracking[0]->date_time;
+                        $formattedDateTime = $responseData->data->tracking[0]->date_time;
                         $status = $responseData->data->tracking[0]->code;
                         $phone = $order_detail->phone;
+
+                        $time_date = date('F j, Y, g:i A', strtotime($formattedDateTime));
                 
-                        $this->SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status);
+                        $this->SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status,$order_detail);
                         
-                        $order_detail->update(['deliverd_status' => 1]);
+                        //$order_detail->update(['deliverd_status' => 1]);
     
                         return $response;
                     }
@@ -116,7 +118,7 @@ class SendDeliveryOrderStatusMessage extends Command
         }
     }
 
-    public function SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status)
+    public function SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status,$order_detail)
     {
         
         if ($status == 'SDELVD') 
@@ -173,8 +175,10 @@ class SendDeliveryOrderStatusMessage extends Command
             curl_close($curl);
             $responseData = json_decode($response, true);
             
-            // if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
-            // {
+             if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
+             {
+                $order_detail->update(['deliverd_status' => 1]);
+
                 try {
             
                     Mail::send('mail.complated_order',['title' => $text],function ($message) use ($email,$subject) {
@@ -188,7 +192,7 @@ class SendDeliveryOrderStatusMessage extends Command
                         'message' => 'Mail Not Send!',
                     ]);
                 }
-           // }
+            }
         }
     }
 }

@@ -299,6 +299,7 @@ class OrderController extends Controller
             $order_id = $request->id;
             $order_status = $request->status;
             $order = Order::find($order_id);
+            $order_type = "make_by_order";
 
             if(isset($order->id)){
 
@@ -308,11 +309,11 @@ class OrderController extends Controller
                 $message = "";
                 if($order_status == 'accepted'){
                     $message = "Order has been Accepted.";
-                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $this->SendOrderConfirmOtp($order,$order_status,$order_type);
                 }elseif($order_status == 'processing'){
                     $message = "Order has been Send to Processing.";
                 }elseif($order_status == 'completed'){
-                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $this->SendOrderConfirmOtp($order,$order_status,$order_type);
                     $message = "Order has been Completed.";
                 }
 
@@ -341,6 +342,7 @@ class OrderController extends Controller
             $order_id = $request->id;
             $order_status = $request->status;
             $order = ReadyOrder::find($order_id);
+            $order_type = "ready_order";
 
             if(isset($order->id)){
 
@@ -349,12 +351,12 @@ class OrderController extends Controller
 
                 $message = "";
                 if($order_status == 'accepted'){
-                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $this->SendOrderConfirmOtp($order,$order_status,$order_type);
                     $message = "Order has been Accepted.";
                 }elseif($order_status == 'processing'){
                     $message = "Order has been Send to Processing.";
                 }elseif($order_status == 'completed'){
-                    $this->SendOrderConfirmOtp($order,$order_status);
+                    $this->SendOrderConfirmOtp($order,$order_status,$order_type);
                     $message = "Order has been Completed.";
                 }
 
@@ -376,7 +378,7 @@ class OrderController extends Controller
         }
     }
 
-    public function SendOrderConfirmOtp($order,$order_status)
+    public function SendOrderConfirmOtp($order,$order_status,$order_type)
     {
         $user = User::where('id',$order->user_id)->first();
         $order_id = $order->id;
@@ -387,9 +389,14 @@ class OrderController extends Controller
         }
 
         if($order_status == "completed"){
-            $link = "https://impel.store/ready-order-details/".$order_id;
-         
-            $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {#var#} From-IMPEL";
+
+            if($order_type == "ready_order"){
+                $link = "https://impel.store/ready-order-details/".$order_id;
+            }else{
+                $link = "https://impel.store/order-details/".$order_id;
+            }
+            
+            $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {$link} From-IMPEL";
             $dlttemplateid = 1707173132899016463;
             $subject = "Order Completed";
         }

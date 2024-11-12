@@ -30,7 +30,19 @@ class DesignCollectionPDFListResource extends JsonResource
             $data['gold_color'] = $designscollection->gold_color;
             $data['quantity'] = 1;
             $data['code'] = $designscollection->designs->code;
-            $data['image'] = (isset($designscollection->designs->image) && file_exists('public/images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image)) ? asset('public/images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image) : asset('public/images/default_images/not-found/no_img1.jpg');
+            
+            // $data['image'] = (isset($designscollection->designs->image) && file_exists('public/images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image)) ? asset('public/images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image) : asset('public/images/default_images/not-found/no_img1.jpg');
+            $imagePath = (isset($designscollection->designs->image) && file_exists(public_path('images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image))) ? public_path('images/uploads/item_images/'.$designscollection->designs->code.'/'.$designscollection->designs->image) : public_path('images/default_images/not-found/no_img1.jpg');
+       
+            if (file_exists($imagePath)) {
+                $imageData = file_get_contents($imagePath);
+                $base64Image = base64_encode($imageData);
+                $data['image'] = 'data:image/jpeg;base64,' . $base64Image; 
+            } else {
+                $imageData = file_get_contents(public_path('images/default_images/not-found/no_img1.jpg'));
+                $base64Image = base64_encode($imageData);
+                $data['image'] = 'data:image/jpeg;base64,' . $base64Image; 
+            }
 
             // Gross Weight
             $data['gross_weight_14k'] = isset($designscollection->designs->gweight1) ? $designscollection->designs->gweight1 : '';

@@ -28,7 +28,21 @@ class ReadyPdfListResource extends JsonResource
             $data['sub_item_id'] = $value->sub_item_id ?? "";
             $data['style_id'] = $value->style_id ?? "";
             $data['barcode'] = $value->barcode ?? "";
-            $data['image'] = $value->barcode ?? "";
+
+            if (isset($value->barcode)) {
+                $imageUrl = "https://api.indianjewelcast.com/TagImage/{$value->barcode}.jpg";
+                $imageData = file_get_contents($imageUrl);
+                if ($imageData !== false) {
+                    $base64Image = base64_encode($imageData);
+                    $data['image'] = 'data:image/jpeg;base64,' . $base64Image;
+                } else {
+                    $data['image'] = '';
+                }
+            } else {
+                $data['image'] = '';
+            }
+            
+
             $data['tag_no'] = $value->tag_no ?? "";
             $data['group_name'] = $value->group_name ?? "";
             $data['name'] = $value->name ?? "";
