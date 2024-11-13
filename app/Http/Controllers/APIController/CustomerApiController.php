@@ -2798,25 +2798,6 @@ class CustomerApiController extends Controller
             return $error;
         }
         curl_close($curl);
-
-        // $responseData = json_decode($response);
-        
-        // $email = $request->email;
-        // $order_id = $request->order_id;
-        // $time_date = $responseData->data->tracking[0]->date_time;
-        // $status = $responseData->data->tracking[0]->code;
-       
-        // if ($status == 'SDELVD') {
-
-        //     $text = "Dear customer your Order no - #({$order_id}) Delivered at ({$time_date}). See you soon again";
-        //     $subject = "Order Delivered Confirmation";
-
-        //     Mail::send('mail.complated_order',['title' => $text],function ($message) use ($email,$subject) {
-        //         $message->from(env('MAIL_USERNAME'));
-        //         $message->to($email);
-        //         $message->subject($subject);
-        //     });
-        // }
         
         return $response;
     }

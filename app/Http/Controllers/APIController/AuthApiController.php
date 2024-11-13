@@ -109,13 +109,13 @@ class AuthApiController extends Controller
     {
 
         try {
-
+           
             $customer = User::where('phone',$request->phone)->first();
-
+           
 
 
             if (!isset($customer->id) && empty($customer->id)) {
-
+              
                 $new_customer = new User;
 
                 $new_customer->phone = $request->phone;
@@ -146,7 +146,7 @@ class AuthApiController extends Controller
 
                             'verification' => $new_customer->verification,
 
-                            'mobile' => $customer->phone,
+                            'mobile' => $request->phone,
                         ]
                     ], Response::HTTP_OK);
 
@@ -202,7 +202,7 @@ class AuthApiController extends Controller
         } catch (\Throwable $th) {
 
 
-
+dd($th);
             return $this->sendApiResponse(false, 0,'Failed to Login!', (object)[]);
 
         }
