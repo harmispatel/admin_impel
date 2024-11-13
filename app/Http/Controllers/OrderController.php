@@ -391,9 +391,9 @@ class OrderController extends Controller
         if($order_status == "completed"){
 
             if($order_type == "ready_order"){
-                $link = "https://impel.store/ready-order-details/".$order_id;
+                $link = "https://impel.store/ready-order-details/?".$order_id;
             }else{
-                $link = "https://impel.store/order-details/".$order_id;
+                $link = "https://impel.store/order-details/?".$order_id;
             }
             
             $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {$link} From-IMPEL";
