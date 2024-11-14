@@ -208,3 +208,5 @@ Route::post('delivery-track', [CustomerApiController::class,'DeliveryTrack']);
 Route::post('ready-to-pdf-store', [CustomerApiController::class,'ReadyToPdf']);
 Route::post('ready-to-pdf-list', [CustomerApiController::class,'ReadtToPdfList']);
 Route::post('ready-to-pdf-delete', [CustomerApiController::class,'readyPdfRemove']);
+
+Route::post('order-track-details', [CustomerApiController::class,'orderTrackDetails']);

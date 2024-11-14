@@ -53,6 +53,7 @@ class ReadyOrderDetailsResource extends JsonResource
         $order_details['order_date'] = (isset($order['created_at'])) ? date('d-m-Y', strtotime($order['created_at'])) : '';
         $order_details['order_time'] = (isset($order['created_at'])) ? date('h:i:s a', strtotime($order['created_at'])) : '';
         $order_details['docate_number'] = (isset($order['docate_number'])) ? $order['docate_number'] : '';
+        $order_details['order_type'] = "ready_to_dispatch_order";
 
         $order_items = [];
 

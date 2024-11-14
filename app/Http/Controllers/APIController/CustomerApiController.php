@@ -2515,9 +2515,11 @@ class CustomerApiController extends Controller
     public function checkServiceability(Request $request)
     {
         $curl = curl_init();
-        $url = 'https://test.sequel247.com/api/checkServiceability';
+        $url = env('SEQUEL_API_URL') . '/api/checkServiceability';
+        $token = env('SEQUEL_API_TOKEN');
+
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "pin_code" => $request->pin_code
         ];
         
@@ -2549,10 +2551,11 @@ class CustomerApiController extends Controller
     public function CreateAddress()
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/create_address";
+        $url = env('SEQUEL_API_URL') . '/api/create_address';
+        $token = env('SEQUEL_API_TOKEN');
 
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "address_type" => "Business",
             "address_short_code" => "BOM4",
             "nature_of_address" => "Warehouse / Distribution Center",
@@ -2593,13 +2596,15 @@ class CustomerApiController extends Controller
     public function CalculateEstimatedDeliveryDate(Request $request)
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/shipment/calculateEDD";
+        $url = env('SEQUEL_API_URL') . '/api/shipment/calculateEDD';
+        $token = env('SEQUEL_API_TOKEN');
 
         $data = [
             "origin_pincode" => "590001", 
             "destination_pincode" => $request->destination_pincode, //user pincode "560078"
             "pickup_date" => $request->pickup_date,  //"17-06-09"
-            "token" => "7f95ea03824896aed84914ef6ec57a31"
+            // "token" => "7f95ea03824896aed84914ef6ec57a31"
+            "token" => $token
         ];
 
         $data = json_encode($data);
@@ -2629,10 +2634,11 @@ class CustomerApiController extends Controller
     public function CancelDelivery(Request $request)
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/cancel";
+        $url = env('SEQUEL_API_URL') . '/api/cancel';
+        $token = env('SEQUEL_API_TOKEN');
 
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "docket" => $request->docket,             //"0584392611"
             "cancelReason"  => $request->cancelReason         //"Pickup not ready"
         ];
@@ -2664,9 +2670,10 @@ class CustomerApiController extends Controller
     public function shipmentCreate(Request $request)
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/shipment/create";
-        $uniqueId = uniqid();
+        $url = env('SEQUEL_API_URL') . '/api/shipment/create';
+        $token = env('SEQUEL_API_TOKEN');
 
+        $uniqueId = uniqid();
         $boxes = [];
         
         for ($i = 0; $i < $request->no_of_packages; $i++) {
@@ -2681,7 +2688,7 @@ class CustomerApiController extends Controller
         }
     
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "location" => "domestic",
             "shipmentType" => "D&J",
             "serviceType" => "valuable",
@@ -2732,10 +2739,11 @@ class CustomerApiController extends Controller
     public function DeliveryProof(Request $request)
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/podDownload";
+        $url = env('SEQUEL_API_URL') . '/api/podDownload';
+        $token = env('SEQUEL_API_TOKEN');
 
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "requestType" => $request->requestType,                   // "docket",
             "dockets" => [
                 $request->dockets                                // ["0661232999"],
@@ -2771,10 +2779,11 @@ class CustomerApiController extends Controller
     public function DeliveryTrack(Request $request)
     {
         $curl = curl_init();
-        $url = "https://test.sequel247.com/api/track";
+        $url = env('SEQUEL_API_URL') . '/api/track';
+        $token = env('SEQUEL_API_TOKEN');
 
         $data = [
-            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+            "token" => $token,
             "docket" => $request->docket
         ];
 
@@ -3059,6 +3068,72 @@ class CustomerApiController extends Controller
         } catch (\Throwable $th) {
             dd($th);
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
+        }
+    }
+
+    public function orderTrackDetails(Request $request)
+    {
+        try {
+
+            $validatedData = Validator::make($request->all(), [
+                'docate_number' => 'required',
+            ]);
+
+            if ($validatedData->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validatedData->errors()->first()
+                ]);
+            }
+
+            $order = Order::where('docate_number',$request->docate_number)->first();
+            $order_ready = ReadyOrder::where('docate_number',$request->docate_number)->first();
+          
+            if (!$order && !$order_ready) {
+                return $this->sendApiResponse(false, 0, 'Order not found.', (object)[]);
+            }
+
+            if(!empty($order)){
+                $order_id = $order->id;
+                $user_id = $order->user_id;
+                $order_type = "make_by_order";
+            }else{
+                $order_id = $order_ready->id;
+                $user_id = $order_ready->user_id;
+                $order_type = "ready_to_dispatch";
+            }
+
+            $user = User::find($user_id);
+            if (!$user) {
+                return $this->sendApiResponse(false, 0, 'User not found.', (object)[]);
+            }
+            $user_type = $user->user_type;
+          
+
+            $order_details = null;
+            if($order_type == "ready_to_dispatch"){
+               
+                if(isset($user_type) && $user_type == 1){
+                    $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
+                }else{
+                 
+                    $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
+                  
+                }
+                $data = new ReadyOrderDetailsResource($order_details);
+
+            }else{
+                if ($user->user_type == 1) {
+                    $order_details = Order::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
+                } else {
+                    $order_details = Order::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
+                }
+                $data = new OrderDetailsResource($order_details);
+            }
+            return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
+            
+        } catch (\Throwable $th) {
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
 
