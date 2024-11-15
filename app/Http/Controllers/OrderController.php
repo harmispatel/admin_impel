@@ -381,7 +381,7 @@ class OrderController extends Controller
     {
         $user = User::where('id',$order->user_id)->first();
         $order_id = $order->id;
-        $docate_number = $order->docate_number;
+        $order_number = $order->order_number;
 
         if($order_status == "accepted"){
             $text = "Thank you for Purchasing Order from impel. This is order id - {$order_id}";
@@ -391,7 +391,7 @@ class OrderController extends Controller
 
         if($order_status == "completed"){
  
-            $link = "https://impel.store/order-tracking-details/?".$docate_number;
+            $link = "https://impel.store/order-tracking-details/?".$order_number;
     
             $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {$link} From-IMPEL";
             $dlttemplateid = 1707173157977963620;

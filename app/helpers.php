@@ -7,7 +7,7 @@
 
 
 use App\Models\AdminSetting;
-
+use Illuminate\Support\Str;
 
 
 function getAdminSettings()
@@ -32,3 +32,8 @@ function getAdminSettings()
 
 }
 
+function OrderNumberRandom()
+{
+    $order_number = rand(10000, 99999);
+    return $order_number;
+}

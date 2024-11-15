@@ -73,7 +73,7 @@ class OrderDetailsResource extends JsonResource
         $order_details['order_time'] = (isset($order['created_at'])) ? date('h:i:s a', strtotime($order['created_at'])) : '';
         $order_details['docate_number'] = (isset($order['docate_number'])) ? $order['docate_number'] : '';
         $order_details['order_type'] = "make_by_order";
-
+        $order_details['order_number'] = (isset($order['order_number'])) ? $order['order_number'] : '';
 
         $order_items = [];
 

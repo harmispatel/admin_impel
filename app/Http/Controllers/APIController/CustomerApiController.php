@@ -1425,6 +1425,7 @@ class CustomerApiController extends Controller
                         $order->advance_payment = (isset($transaction->data->amount)) ? $transaction->data->amount : 0;
                         $order->payment_instrument = (isset($transaction->data->paymentInstrument)) ? serialize($transaction->data->paymentInstrument) : "";
                         $order->docate_number = (isset($request->docate_number)) ? $request->docate_number : "";
+                        $order->order_number = OrderNumberRandom();
                         $order->save();
 
                         if ($order->id) {
@@ -2150,6 +2151,7 @@ class CustomerApiController extends Controller
                         'payment_status' => 0,
                         'payment_method' => 'cash',
                         'docate_number' => isset($request->docate_number) ? $request->docate_number : '',
+                        'order_number' => OrderNumberRandom()
                     ];
                     
                     $new_order = ReadyOrder::create($order_input);
@@ -2240,6 +2242,7 @@ class CustomerApiController extends Controller
                                 'transaction_id' => (isset($transaction->data->transactionId)) ? $transaction->data->transactionId : "",
                                 'merchant_transaction_id' => (isset($transaction->data->merchantTransactionId)) ? $transaction->data->merchantTransactionId : "",
                                 'docate_number' => isset($request->docate_number) ? $request->docate_number : '',
+                                'order_number' => OrderNumberRandom()
                             ];
                             $new_order = ReadyOrder::create($order_input);
 
@@ -2306,7 +2309,9 @@ class CustomerApiController extends Controller
             }
             return $this->sendApiResponse(false, 0, 'Failed to Purchase Order!', []);
         } catch (\Throwable $th) {
-            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
+            
+            return $this->sendApiResponse(false, 0, $th->getMessage(), []);
+            // return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', []);
         }
     }
 
@@ -3071,12 +3076,78 @@ class CustomerApiController extends Controller
         }
     }
 
+    // public function orderTrackDetails(Request $request)
+    // {
+    //     try {
+
+    //         $validatedData = Validator::make($request->all(), [
+    //             'docate_number' => 'required',
+    //         ]);
+
+    //         if ($validatedData->fails()) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => $validatedData->errors()->first()
+    //             ]);
+    //         }
+
+    //         $order = Order::where('docate_number',$request->docate_number)->first();
+    //         $order_ready = ReadyOrder::where('docate_number',$request->docate_number)->first();
+          
+    //         if (!$order && !$order_ready) {
+    //             return $this->sendApiResponse(false, 0, 'Order not found.', (object)[]);
+    //         }
+
+    //         if(!empty($order)){
+    //             $order_id = $order->id;
+    //             $user_id = $order->user_id;
+    //             $order_type = "make_by_order";
+    //         }else{
+    //             $order_id = $order_ready->id;
+    //             $user_id = $order_ready->user_id;
+    //             $order_type = "ready_to_dispatch";
+    //         }
+
+    //         $user = User::find($user_id);
+    //         if (!$user) {
+    //             return $this->sendApiResponse(false, 0, 'User not found.', (object)[]);
+    //         }
+    //         $user_type = $user->user_type;
+          
+
+    //         $order_details = null;
+    //         if($order_type == "ready_to_dispatch"){
+               
+    //             if(isset($user_type) && $user_type == 1){
+    //                 $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
+    //             }else{
+                 
+    //                 $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
+                  
+    //             }
+    //             $data = new ReadyOrderDetailsResource($order_details);
+
+    //         }else{
+    //             if ($user->user_type == 1) {
+    //                 $order_details = Order::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
+    //             } else {
+    //                 $order_details = Order::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
+    //             }
+    //             $data = new OrderDetailsResource($order_details);
+    //         }
+    //         return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
+            
+    //     } catch (\Throwable $th) {
+    //         return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
+    //     }
+    // }
+
     public function orderTrackDetails(Request $request)
     {
         try {
 
             $validatedData = Validator::make($request->all(), [
-                'docate_number' => 'required',
+                'order_number' => 'required',
             ]);
 
             if ($validatedData->fails()) {
@@ -3086,8 +3157,8 @@ class CustomerApiController extends Controller
                 ]);
             }
 
-            $order = Order::where('docate_number',$request->docate_number)->first();
-            $order_ready = ReadyOrder::where('docate_number',$request->docate_number)->first();
+            $order = Order::where('order_number',$request->order_number)->first();
+            $order_ready = ReadyOrder::where('order_number',$request->order_number)->first();
           
             if (!$order && !$order_ready) {
                 return $this->sendApiResponse(false, 0, 'Order not found.', (object)[]);
@@ -3136,5 +3207,6 @@ class CustomerApiController extends Controller
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
+
 
 }

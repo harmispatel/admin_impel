@@ -235,7 +235,20 @@ class DesignImportFromGoogleSheet extends Command
                                     '1' => $design_no."B.jpg",
                                     '2' => $design_no."C.jpg",
                                     '3' => $design_no."D.jpg",
+                                    '4' => $design_no."E.jpg",
+                                    '5' => $design_no."F.jpg",
+                                    '6' => $design_no."G.jpg",
+                                    '7' => $design_no."H.jpg",
+                                    '8' => $design_no."I.jpg",
+                                    '9' => $design_no."J.jpg",
+                                   '10' => $design_no."K.jpg",
+                                   '11' => $design_no."L.jpg",
+                                   '12' => $design_no."M.jpg",
+                                   '13' => $design_no."N.jpg",
+                                   '14' => $design_no."O.jpg",
+                                   '15' => $design_no."P.jpg",
                                 ];
+                                
                                 if(count($mul_images) > 0){
                                     foreach($mul_images as $image){
                                         $new_image = new Design_image();
@@ -263,7 +276,8 @@ class DesignImportFromGoogleSheet extends Command
             } 
           	else 
             {
-            	$this->error('An unknown error occurred.');
+                dd($e);
+            	// $this->error('An unknown error occurred.');
             }
         }
     }
