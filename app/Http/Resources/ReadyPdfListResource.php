@@ -56,7 +56,7 @@ class ReadyPdfListResource extends JsonResource
             $data['total_amount'] = $value->total_amount ?? 0;
             $pdf_array[] = $data;
         }
-        $main_array['ready_pdfs_list'] = $pdf_array;
+        $main_array['ready_pdfs_list'] = $pdf_array;  
         return $main_array;
     }
 }

@@ -2704,8 +2704,8 @@ class CustomerApiController extends Controller
             "net_weight" => $request->net_weight,      // "10",
             "gross_weight" => $request->net_weight,    // "23",
             "net_value" => $request->net_weight,       // "454645", Net Value of the shipment
-            "codValue" => $request->net_weight,        // "49999", Cash on delivery value (max INR. 50,000)
-            "no_of_packages" =>$request->no_of_packages,                         //"2",
+            "codValue" => isset($request->codValue) ? $request->codValue : '',        // "49999", Cash on delivery value (max INR. 50,000)
+            "no_of_packages" => isset($request->no_of_packages) ? $request->no_of_packages : '',                         //"2",
             "boxes" => $boxes,
             "invoice" => [
                 ""
