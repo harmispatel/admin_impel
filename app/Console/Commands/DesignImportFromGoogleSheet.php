@@ -96,6 +96,7 @@ class DesignImportFromGoogleSheet extends Command
                             $design_no = (isset($item[0])) ? $item[0] : '';
                             $input['code'] = $design_no;
                             $input['name'] = (isset($item[3])) ? $item[3] : '';
+                        
                             $input['category_id'] = (isset($item[2])) ? $item[2] : '';
                             $input['gender_id'] = (isset($item[4])) ? $item[4] : '';
                             $input['metal_id'] = (isset($item[5])) ? $item[5] : '';
@@ -221,7 +222,6 @@ class DesignImportFromGoogleSheet extends Command
                             $input['total_price_18k'] = (isset($item[82]) && !empty($item[82])) ? $item[82] : 0.00;
                             $input['total_price_14k'] = (isset($item[83]) && !empty($item[83])) ? $item[83] : 0.00;
                             
-                            
                             if(!empty($design_id) || $design_id != ''){
                                 // Update Design
                                 $update_design = Design::find($design_id)->update($input);
@@ -264,7 +264,7 @@ class DesignImportFromGoogleSheet extends Command
             }
 
             
-            $this->info('Design has been Imported SuccessFully.');
+            $this->info('Design has been Imported SuccessFully.' . now()->format('Y-m-d H:i:s'));
         }
         catch (\Exception $e)
         {
@@ -276,8 +276,7 @@ class DesignImportFromGoogleSheet extends Command
             } 
           	else 
             {
-                dd($e);
-            	// $this->error('An unknown error occurred.');
+            	$this->error('An unknown error occurred.' . now()->format('Y-m-d H:i:s'));
             }
         }
     }

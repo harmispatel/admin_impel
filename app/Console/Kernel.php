@@ -34,7 +34,7 @@ class Kernel extends ConsoleKernel
 
         // $schedule->command('inspire')->hourly();everyTwoHours();
 
-        $schedule->command('import:design-from-google-sheet')->everyMinute();
+        $schedule->command('import:design-from-google-sheet')->everyTwoHours();
         $schedule->command('send:send-message-for-order-status-complate')->everyFourHours();
     }
 
