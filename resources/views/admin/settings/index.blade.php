@@ -334,26 +334,65 @@
 
                                 </div>
 
+                                <div class="form_box_inr">
+                                    <div class="box_title">
+                                        <h2>Sequal Settings</h2>
+                                    </div>
+                                    <div class="form_box_info">
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            id="sequel_live" name="settings[sequel_live]"
+                                                            value="1"
+                                                            {{ isset($settings['sequel_live']) && $settings['sequel_live'] == 1 ? 'checked' : '' }}>
+                                                    </div>
+                                                    <label for="sequel_live"><strong>Live Mode</strong></label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="sequel_live_api_token" class="form-label">Live Api Token</label>
+                                                <input type="text" name="settings[sequel_live_api_token]"
+                                                    id="sequel_live_api_token" class="form-control"
+                                                    value="{{ isset($settings['sequel_live_api_token']) ? $settings['sequel_live_api_token'] : '' }}">
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="sequel_live_api_url" class="form-label">Live Api Url</label>
+
+                                                <input type="text" name="settings[sequel_live_api_url]"
+                                                    id="sequel_live_api_url" class="form-control"
+                                                    value="{{ isset($settings['sequel_live_api_url']) ? $settings['sequel_live_api_url'] : '' }}">
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="sequel_test_api_token" class="form-label">Test Api Token</label>
+                                                <input type="text" name="settings[sequel_test_api_token]"
+                                                    id="sequel_test_api_token" class="form-control"
+                                                    value="{{ isset($settings['sequel_test_api_token']) ? $settings['sequel_test_api_token'] : '' }}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="sequel_test_api_url" class="form-label">Test Api Url</label>
+                                                <input type="text" name="settings[sequel_test_api_url]"
+                                                    id="sequel_test_api_url" class="form-control"
+                                                    value="{{ isset($settings['sequel_test_api_url']) ? $settings['sequel_test_api_url'] : '' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
                         </div>
-
                         <div class="card-footer text-center">
-
                             @can('settings.update')
                                 <button class="btn form_button">Update</button>
                             @endcan
-
                         </div>
-
                     </form>
-
                 </div>
-
             </div>
-
         </div>
-
     </section>
 
 

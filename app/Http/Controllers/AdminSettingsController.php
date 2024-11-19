@@ -100,6 +100,7 @@ class AdminSettingsController extends Controller
         try{
             $settings = $request->settings;
             $settings['phonepe_live'] = (isset($settings['phonepe_live'])) ? $settings['phonepe_live'] : 0;
+            $settings['sequel_live'] = (isset($settings['sequel_live'])) ? $settings['sequel_live'] : 0;
 
             if(Auth::guard('admin')->user()->can('settings.update')){
 

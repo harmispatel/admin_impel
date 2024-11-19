@@ -55,7 +55,7 @@ class ReadyOrderDetailsResource extends JsonResource
         $order_details['docate_number'] = (isset($order['docate_number'])) ? $order['docate_number'] : '';
         $order_details['order_type'] = "ready_to_dispatch_order";
         $order_details['order_number'] = (isset($order['order_number'])) ? $order['order_number'] : '';
-
+        
         $order_items = [];
 
         if(isset($order['order_items']) && count($order['order_items']) > 0){
@@ -67,6 +67,7 @@ class ReadyOrderDetailsResource extends JsonResource
                 $item['design_name'] = $order_item['design_name'];
                 $item['quantity'] = intval($order_item['quantity']);
                 $item['barcode'] = $order_item['barcode'];
+                $item['design_image'] = "https://api.indianjewelcast.com/TagImage/{$item['barcode']}.jpg";
                 $item['gross_weight'] = $order_item['gross_weight'];
                 $item['net_weight'] = $order_item['net_weight'];
                 $item['metal_value'] = $order_item['metal_value'];

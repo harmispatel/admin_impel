@@ -2520,8 +2520,8 @@ class CustomerApiController extends Controller
     public function checkServiceability(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/checkServiceability';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/checkServiceability';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "token" => $token,
@@ -2556,8 +2556,8 @@ class CustomerApiController extends Controller
     public function CreateAddress()
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/create_address';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/create_address';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "token" => $token,
@@ -2601,8 +2601,8 @@ class CustomerApiController extends Controller
     public function CalculateEstimatedDeliveryDate(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/shipment/calculateEDD';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/shipment/calculateEDD';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "origin_pincode" => "590001", 
@@ -2639,8 +2639,8 @@ class CustomerApiController extends Controller
     public function CancelDelivery(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/cancel';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/cancel';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "token" => $token,
@@ -2675,8 +2675,8 @@ class CustomerApiController extends Controller
     public function shipmentCreate(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/shipment/create';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/shipment/create';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $uniqueId = uniqid();
         $boxes = [];
@@ -2744,8 +2744,8 @@ class CustomerApiController extends Controller
     public function DeliveryProof(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/podDownload';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/podDownload';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "token" => $token,
@@ -2784,8 +2784,8 @@ class CustomerApiController extends Controller
     public function DeliveryTrack(Request $request)
     {
         $curl = curl_init();
-        $url = env('SEQUEL_API_URL') . '/api/track';
-        $token = env('SEQUEL_API_TOKEN');
+        $url = seqaulCredentials()['sequel_api_url'] . '/api/track';
+        $token = seqaulCredentials()['sequel_api_token'];
 
         $data = [
             "token" => $token,
