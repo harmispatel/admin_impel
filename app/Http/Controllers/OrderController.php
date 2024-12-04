@@ -384,7 +384,7 @@ class OrderController extends Controller
         $order_number = $order->order_number;
 
         if($order_status == "accepted"){
-            $text = "Thank you for Purchasing Order from impel. This is order id - {$order_id}";
+            $text = "Thank you for Purchasing Order from impel. This is order id - {$order_number}";
             $dlttemplateid = 1707172899343565302;
             $subject = "Order Confirmation";
         }
@@ -393,7 +393,7 @@ class OrderController extends Controller
  
             $link = "https://impel.store/order-tracking-details/?".$order_number;
     
-            $text = "Dear customer,your order no - {$order_id}. has been dispatched.Here is a tracking link for your shipment - {$link} From-IMPEL";
+            $text = "Dear customer,your order no - {$order_number}. has been dispatched.Here is a tracking link for your shipment - {$link} From-IMPEL";
             $dlttemplateid = 1707173157977963620;
             $subject = "Order Completed";
         }

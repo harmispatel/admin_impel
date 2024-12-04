@@ -2683,12 +2683,12 @@ class CustomerApiController extends Controller
         
         for ($i = 0; $i < $request->no_of_packages; $i++) {
             $boxes[] = [
-                "box_number" => "ZV_" . $uniqueId . "_00" . ($i + 1), // Dynamically generate box number
-                "lock_number" => $request->boxes[$i]['lock_number'] ?? 'LK_DEFAULT',  // Dynamic lock number or default
-                "length" => $request->boxes[$i]['length'],     // Length for this box
-                "breadth" => $request->boxes[$i]['breadth'],   // Breadth for this box
-                "height" => $request->boxes[$i]['height'],     // Height for this box
-                "gross_weight" => $request->boxes[$i]['gross_weight']  // Gross weight for this box
+                "box_number" => "ZV_" . $uniqueId . "_00" . ($i + 1), 
+                "lock_number" => $request->boxes[$i]['lock_number'] ?? 'LK_DEFAULT',  
+                "length" => $request->boxes[$i]['length'],     
+                "breadth" => $request->boxes[$i]['breadth'],   
+                "height" => $request->boxes[$i]['height'],     
+                "gross_weight" => $request->boxes[$i]['gross_weight']  
             ];
         }
     
@@ -2706,9 +2706,9 @@ class CustomerApiController extends Controller
                 "auth_receiver_name" => $request->auth_receiver_name,  //"Ketan",
                 "auth_receiver_phone" => $request->auth_receiver_phone, //"98XXXXXXXX"
             ],
-            "net_weight" => $request->net_weight,      // "10",
-            "gross_weight" => $request->net_weight,    // "23",
-            "net_value" => $request->net_weight,       // "454645", Net Value of the shipment
+            "net_weight" => isset($request->net_weight) ? $request->net_weight : '',      // "10",
+            "gross_weight" => isset($request->gross_weight) ? $request->gross_weight : '',    // "23",
+            "net_value" => isset($request->net_value) ? $request->net_value : '',       // "454645", Net Value of the shipment
             "codValue" => isset($request->codValue) ? $request->codValue : '',        // "49999", Cash on delivery value (max INR. 50,000)
             "no_of_packages" => isset($request->no_of_packages) ? $request->no_of_packages : '',                         //"2",
             "boxes" => $boxes,
