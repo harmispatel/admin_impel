@@ -50,8 +50,11 @@ class SendDeliveryOrderStatusMessage extends Command
     {
         try {
             $curl = curl_init();
-            $url = "https://test.sequel247.com/api/track";
-    
+           
+            $token = seqaulCredentials()['sequel_api_token'];
+
+            $url = seqaulCredentials()['sequel_api_url'] . '/api/track';
+
             $order_details = Order::where('order_status','completed')->where('deliverd_status',0)->get();
 
             $ready_order_details = ReadyOrder::where('order_status','completed')->where('deliverd_status',0)->get();
@@ -64,7 +67,7 @@ class SendDeliveryOrderStatusMessage extends Command
                     if(!empty($order_detail->docate_number)){
                     
                         $data = [
-                            "token" => "d55c9549f11637d0ad4d2808ffc3fcaa",
+                            "token" => $token,
                             "docket" => $order_detail->docate_number
                         ];
                 
@@ -94,13 +97,14 @@ class SendDeliveryOrderStatusMessage extends Command
                       
                         $email = $order_detail->email;
                         $order_id = $order_detail->id;
+                        $order_number = $order_detail->order_number;
                         $formattedDateTime = $responseData->data->tracking[0]->date_time;
                         $status = $responseData->data->tracking[0]->code;
                         $phone = $order_detail->phone;
 
                         $time_date = date('F j, Y, g:i A', strtotime($formattedDateTime));
                 
-                        $this->SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status,$order_detail);
+                        $this->SendOrderTrackMessage($order_number,$order_id,$phone,$email,$time_date,$status,$order_detail);
                         
                         //$order_detail->update(['deliverd_status' => 1]);
     
@@ -118,12 +122,12 @@ class SendDeliveryOrderStatusMessage extends Command
         }
     }
 
-    public function SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status,$order_detail)
+    public function SendOrderTrackMessage($order_number,$order_id,$phone,$email,$time_date,$status,$order_detail)
     {
         
         if ($status == 'SDELVD') 
         {   
-            $text = "Dear customer your Order no - {$order_id}. Delivered at {$time_date}. See you soon again. - From-IMPEL";
+            $text = "Dear customer your Order no - {$order_number}. Delivered at {$time_date}. See you soon again. - From-IMPEL";
           
             $dlttemplateid = 1707173132372429334;
             $subject = "Order Delivered Confirmation";
