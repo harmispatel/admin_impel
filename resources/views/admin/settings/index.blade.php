@@ -303,38 +303,6 @@
                                 </div> -->
 
                                 <div class="form_box_inr">
-
-                                    <div class="box_title">
-
-                                        <h2>Other Settings</h2>
-
-                                    </div>
-
-                                    <div class="form_box_info">
-
-                                        <div class="row">
-
-                                            <div class="col-md-12 mb-3">
-
-                                                <label for="frontend_copyright" class="form-label">Frontend
-                                                    Copyright</label>
-
-                                                <input type="text" name="settings[frontend_copyright]"
-                                                    id="frontend_copyright" class="form-control"
-                                                    value="{{ isset($settings['frontend_copyright']) ? $settings['frontend_copyright'] : '' }}">
-
-                                                <code>Note : Do not remove the {year} tag. it is used to get the current
-                                                    year. You can place it wherever you want.</code>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                                <div class="form_box_inr">
                                     <div class="box_title">
                                         <h2>Sequal Settings</h2>
                                     </div>
@@ -382,6 +350,39 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="form_box_inr">
+
+                                    <div class="box_title">
+
+                                        <h2>Other Settings</h2>
+
+                                    </div>
+
+                                    <div class="form_box_info">
+
+                                        <div class="row">
+
+                                            <div class="col-md-12 mb-3">
+
+                                                <label for="frontend_copyright" class="form-label">Frontend
+                                                    Copyright</label>
+
+                                                <input type="text" name="settings[frontend_copyright]"
+                                                    id="frontend_copyright" class="form-control"
+                                                    value="{{ isset($settings['frontend_copyright']) ? $settings['frontend_copyright'] : '' }}">
+
+                                                <code>Note : Do not remove the {year} tag. it is used to get the current
+                                                    year. You can place it wherever you want.</code>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                               
                             </div>
                         </div>
                         <div class="card-footer text-center">
