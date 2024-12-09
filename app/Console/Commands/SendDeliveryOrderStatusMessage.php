@@ -113,8 +113,7 @@ class SendDeliveryOrderStatusMessage extends Command
                 }
             }
 
-            $this->info('Order Delivered Check SuccessFully.');
-
+            $this->info('Order Delivered Check SuccessFully.' . now()->format('Y-m-d H:i:s'));
         } catch (\Exception $e) {
             return response()->json([
                 'message'=> $e->getMessage(),
