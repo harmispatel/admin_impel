@@ -114,6 +114,32 @@
                                                         </div>
                                                         </td>
                                                 </tr>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div style="width: 47%"><strong>Pending Amount : </strong></div>
+                                                            <div style="width: 53%">
+
+                                                            @if ($order->deliverd_status == 'SDELVD')
+                                                                <span class="badge bg-success" style="font-size: 15px; text-decoration: line-through;">
+                                                                ₹ {{ $order->pending_cash }}</span>
+                                                            @else
+                                                                @if ($order->pending_cash == 0)
+                                                                <span class="badge bg-success" style="font-size: 15px;">
+                                                                ₹ {{ $order->pending_cash }}</span>
+                                                                @else
+                                                                <span class="badge bg-danger" style="font-size: 15px;">
+                                                                ₹ {{ $order->pending_cash }}</span>
+                                                                @endif
+                                                            @endif
+                                                                
+                                                                
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -189,6 +215,7 @@
                                                         </div>
                                                     </td>
                                                 </tr>
+                                               
                                             </tbody>
                                         </table>
                                     </div>
@@ -212,6 +239,7 @@
                                                         <th scope="col">Net Weight</th>
                                                         <th scope="col">Metal Price</th>
                                                         <th scope="col">Total</th>
+                                                        
                                                     </tr>
                                                 </thead>
                                                 <tbody class="text-gray-600">

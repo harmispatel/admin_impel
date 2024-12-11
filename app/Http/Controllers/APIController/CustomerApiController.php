@@ -1426,6 +1426,7 @@ class CustomerApiController extends Controller
                         $order->payment_instrument = (isset($transaction->data->paymentInstrument)) ? serialize($transaction->data->paymentInstrument) : "";
                         $order->docate_number = (isset($request->docate_number)) ? $request->docate_number : "";
                         $order->order_number = OrderNumberRandom();
+                        $order->pending_cash = (isset($request->pending_cash)) ? $request->pending_cash : 0;
                         $order->save();
 
                         if ($order->id) {
