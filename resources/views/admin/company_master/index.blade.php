@@ -109,6 +109,7 @@
 
                                                         @can('comapny.master.destroy')
                                                             <a onclick="deleteCompany('{{ encrypt($company->id) }}')" class="btn btn-sm btn-danger me-1"><i class="bi bi-trash"></i></a>
+                                                            <a href="{{ route('comapny.master.show', encrypt($company->company_tag_id)) }}" class="btn btn-sm custom-btn"><i class="fa-solid fa-eye"></i></a>
                                                         @endcan
                                                     </td>
                                             </tr>
