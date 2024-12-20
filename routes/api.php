@@ -210,3 +210,9 @@ Route::post('ready-to-pdf-list', [CustomerApiController::class,'ReadtToPdfList']
 Route::post('ready-to-pdf-delete', [CustomerApiController::class,'readyPdfRemove']);
 
 Route::post('order-track-details', [CustomerApiController::class,'orderTrackDetails']);
+
+
+//company master
+
+
+Route::post('comanymaster', [CustomerApiController::class,'CompanyMaster']);

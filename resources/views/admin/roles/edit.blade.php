@@ -1239,6 +1239,17 @@
                                                                 <span class="form-check-label">Delete </span>
                                                             </label>
                                                         </div>
+
+                                                        <div class="col-md-2">
+                                                            <label class="form-check">
+
+                                                                <input class="form-check-input" type="checkbox" value="{{ (isset($permissions['comapny.master.status'])) ? $permissions['comapny.master.status'] : '' }}" name="permissions[]" {{ (isset($permissions['comapny.master.status']) && in_array($permissions['comapny.master.status'], $role_permissions)) ? 'checked' : '' }}>
+
+                                                                <span class="form-check-label">status </span>
+                                                            </label>
+                                                        </div>
+
+
                                                     </div>
                                                 </td>
                                             </tr>

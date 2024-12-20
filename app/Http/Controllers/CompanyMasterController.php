@@ -224,4 +224,25 @@ class CompanyMasterController extends Controller
             ]);
         }
     }
+
+
+     // Change status of specified Comapny master
+     public function status(Request $request)
+     {
+         try {
+             $comapny_master = CompanyMaster::find(decrypt($request->id));
+             $comapny_master->status = ($comapny_master->status == 1) ? 0 : 1;
+             $comapny_master->update();
+             return response()->json([
+                 'success' => 1,
+                 'message' => ($comapny_master->status == 1) ? 'Comapany Master has been Enabled.' : 'Comapany Master has been Disabled.',
+             ]);
+         } catch (\Throwable $th) {
+             return response()->json([
+                 'success' => 0,
+                 'message' => 'Oops, Something went wrong!',
+             ]);
+         }
+     }
+ 
 }

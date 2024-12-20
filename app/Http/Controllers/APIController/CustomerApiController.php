@@ -3210,4 +3210,18 @@ class CustomerApiController extends Controller
     }
 
 
+    public function CompanyMaster()
+    {
+        try {
+            $companymaster = CompanyMaster::select('id','company_name','company_tag_id','status')->get();
+            return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $companymaster);
+            return response()->json([
+                'success' => true,
+                'message' => 'Remove Design SuccessFully'
+            ]);
+        } catch (\Throwable $th) {
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
+        }
+    }
+
 }

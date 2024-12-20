@@ -235,9 +235,9 @@ Route::group(['prefix' => 'admin'], function ()
             Route::post('comapny/master/edit', 'edit')->name('comapny.master.edit');
             Route::post('comapny/master/update', 'update')->name('comapny.master.update');
             Route::post('company/master/delete','destroy')->name('comapny.master.destroy');
-
             Route::get('comapny/show/{id}', 'show')->name('comapny.master.show');
             Route::post('comapny/master/itemgroup/update', 'updateItemGroup')->name('company.itemgroup.update');
+            Route::post('company/master/status','status')->name('comapny.master.status');
         });
 
         // Tag

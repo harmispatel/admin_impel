@@ -103,6 +103,12 @@
                                                 <td>{{ $company->company_tag_id }}</td>
                                                 <td>{{ $company->company_name }}</td>
                                                     <td>
+                                                        @if ($company->status == 1)
+                                                            <a onclick="changeStatus('{{ encrypt($company->id) }}')" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Disable') }}"><i class="bi bi-x-circle"></i></a>
+                                                        @else
+                                                            <a onclick="changeStatus('{{ encrypt($company->id) }}')" class="btn btn-sm btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Enable') }}"><i class="bi bi-check-circle"></i></a>
+                                                        @endif
+
                                                         @can('comapny.master.edit')
                                                             <a onclick="editCompany('{{ encrypt($company->id) }}')" class="btn btn-sm custom-btn me-1"><i class="bi bi-pencil"></i></a>
                                                         @endcan
@@ -312,6 +318,30 @@
                             }
                         }
                     });
+                }
+            });
+        }
+
+
+         // Function for Change Status of Category
+         function changeStatus(id) {
+            $.ajax({
+                type: "POST",
+                url: "{{ route('comapny.master.status') }}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "id": id,
+                },
+                dataType: "JSON",
+                success: function(response) {
+                    if (response.success == 1) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message);
+                    }
                 }
             });
         }
