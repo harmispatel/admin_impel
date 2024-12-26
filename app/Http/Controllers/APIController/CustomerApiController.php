@@ -2702,7 +2702,7 @@ class CustomerApiController extends Controller
             "toAddress" => [
                 "consignee_name" => $request->consignee_name,      //"Siddhartha K",
                 "address_line1" => $request->address_line1,       //"House No=> 3405, Gondhali",
-                "address_line2" => $request->address_line2,       //"Galli",
+                "address_line2" => isset($request->address_line2) ? $request->address_line2 : "",       //"Galli",
                 "pinCode" => $request->pinCode,             //"590001",
                 "auth_receiver_name" => $request->auth_receiver_name,  //"Ketan",
                 "auth_receiver_phone" => $request->auth_receiver_phone, //"98XXXXXXXX"

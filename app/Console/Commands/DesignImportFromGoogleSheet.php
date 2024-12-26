@@ -85,16 +85,22 @@ class DesignImportFromGoogleSheet extends Command
 
             if(count($sheets_data) > 0)
             {
+                $design_codes_from_sheet = [];
                 foreach($sheets_data as $sheet_data)
                 {
                     unset($sheet_data[0]);
                     $items = array_values($sheet_data);
+                   
+                    
                     if(count($items) > 0)
                     {
                         foreach($items as $item)
                         {
                             $design_no = (isset($item[0])) ? $item[0] : '';
                             $input['code'] = $design_no;
+                            
+                            $design_codes_from_sheet[] = $design_no;
+
                             $input['name'] = (isset($item[3])) ? $item[3] : '';
                         
                             $input['category_id'] = (isset($item[2])) ? $item[2] : '';
@@ -221,11 +227,12 @@ class DesignImportFromGoogleSheet extends Command
                             $input['total_price_20k'] = (isset($item[81]) && !empty($item[81])) ? $item[81] : 0.00;
                             $input['total_price_18k'] = (isset($item[82]) && !empty($item[82])) ? $item[82] : 0.00;
                             $input['total_price_14k'] = (isset($item[83]) && !empty($item[83])) ? $item[83] : 0.00;
-                            
+
                             if(!empty($design_id) || $design_id != ''){
                                 // Update Design
                                 $update_design = Design::find($design_id)->update($input);
                             }else{
+                               
                                 // Create New Design
                                 $new_design = Design::create($input);
 
@@ -260,6 +267,16 @@ class DesignImportFromGoogleSheet extends Command
                             }
                         }
                     }
+                 
+                
+                }
+                
+                if($design_codes_from_sheet > 0){
+                    $desig_codes = Design::whereNotIn('code', $design_codes_from_sheet)
+                    ->pluck('id');
+
+                    Design::whereNotIn('code', $design_codes_from_sheet)->delete();
+                    Design_image::whereIn('design_id', $desig_codes)->delete();
                 }
             }
 
