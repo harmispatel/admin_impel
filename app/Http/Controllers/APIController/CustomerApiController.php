@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ReadyOrder, ReadyOrderItem, ReadyToPdf, UserOtp};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ItemGroup, ReadyOrder, ReadyOrderItem, ReadyToPdf, UserOtp};
 use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, ReadyPdfListResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
 use GuzzleHttp\Client;
@@ -1875,8 +1875,8 @@ class CustomerApiController extends Controller
                 'Content-Type: application/json',
                 // Add any other headers if required
             ],
-            CURLOPT_TIMEOUT => 30, // Timeout in seconds
-            CURLOPT_CONNECTTIMEOUT => 10, // Connection timeout in seconds
+            CURLOPT_TIMEOUT => 60, // Timeout in seconds
+            CURLOPT_CONNECTTIMEOUT => 30, // Connection timeout in seconds
         ]);
 
         // Execute the request
@@ -3215,10 +3215,19 @@ class CustomerApiController extends Controller
         try {
             $companymaster = CompanyMaster::select('id','company_name','company_tag_id','status')->get();
             return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $companymaster);
-            return response()->json([
-                'success' => true,
-                'message' => 'Remove Design SuccessFully'
-            ]);
+        } catch (\Throwable $th) {
+            return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
+        }
+    }
+
+    public function CompanyMasterItemGroup(Request $request)
+    {
+        try {
+            $company_master_ids = $request->company_master_id;
+            if (is_array($company_master_ids) && !empty($company_master_ids)) {
+                $item_groups = ItemGroup::whereIn('company_master_id', $company_master_ids)->get();
+                return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $item_groups);
+            }
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
