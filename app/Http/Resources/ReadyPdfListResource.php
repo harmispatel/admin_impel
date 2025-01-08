@@ -29,17 +29,41 @@ class ReadyPdfListResource extends JsonResource
             $data['style_id'] = $value->style_id ?? "";
             $data['barcode'] = $value->barcode ?? "";
 
-            if (isset($value->barcode)) {
-                $imageUrl = "https://api.indianjewelcast.com/TagImage/{$value->barcode}.jpg";
-                $imageData = file_get_contents($imageUrl);
-                if ($imageData !== false) {
-                    $base64Image = base64_encode($imageData);
-                    $data['image'] = 'data:image/jpeg;base64,' . $base64Image;
+            // if (isset($value->barcode)) {
+            //     $imageUrl = "https://api.indianjewelcast.com/TagImage/{$value->barcode}.jpg";
+            //     $imageData = file_get_contents($imageUrl);
+            //     if ($imageData !== false) {
+            //         $base64Image = base64_encode($imageData);
+            //         $data['image'] = 'data:image/jpeg;base64,' . $base64Image;
+            //     } else {
+            //         $data['image'] = '';
+            //     }
+            // } else {
+            //     $data['image'] = '';
+            // }
+
+            // Check if the image has already been cached
+            $cacheKey = 'image_' . $value->barcode;
+            $cachedImage = cache()->get($cacheKey);
+
+            if ($cachedImage) {
+                $data['image'] = $cachedImage;
+            } else {
+                if (isset($value->barcode)) {
+                    $imageUrl = "https://api.indianjewelcast.com/TagImage/{$value->barcode}.jpg";
+                    $imageData = file_get_contents($imageUrl);
+
+                    if ($imageData !== false) {
+                        $base64Image = base64_encode($imageData);
+                        $imageBase64 = 'data:image/jpeg;base64,' . $base64Image;
+                        cache()->put($cacheKey, $imageBase64, now()->addHours(24));
+                        $data['image'] = $imageBase64;
+                    } else {
+                        $data['image'] = '';
+                    }
                 } else {
                     $data['image'] = '';
                 }
-            } else {
-                $data['image'] = '';
             }
             
 

@@ -1858,14 +1858,9 @@ class CustomerApiController extends Controller
     {
         // Initialize curl
         $curl = curl_init();
-
-        // Set the POST URL
         $url = 'https://api.indianjewelcast.com/api/Tag/GetAll';
-
-        // Set the POST data
         $data = json_encode($request->all());
 
-        // Set curl options
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -1873,26 +1868,20 @@ class CustomerApiController extends Controller
             CURLOPT_POSTFIELDS => $data,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                // Add any other headers if required
             ],
-            CURLOPT_TIMEOUT => 60, // Timeout in seconds
-            CURLOPT_CONNECTTIMEOUT => 30, // Connection timeout in seconds
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_CONNECTTIMEOUT => 30,
         ]);
 
         // Execute the request
         $response = curl_exec($curl);
-
-        // Check for errors
         if (curl_errno($curl)) {
             $error = curl_error($curl);
             curl_close($curl);
             return $error;
         }
 
-        // Close curl
         curl_close($curl);
-
-        // Output response
         return $response;
     }
 
@@ -1960,7 +1949,7 @@ class CustomerApiController extends Controller
                 'Content-Type: application/json',
                 // Add any other headers if required
             ],
-            CURLOPT_TIMEOUT => 30, // Timeout in seconds
+            CURLOPT_TIMEOUT => 60, // Timeout in seconds
             CURLOPT_CONNECTTIMEOUT => 10, // Connection timeout in seconds
         ]);
 
