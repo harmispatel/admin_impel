@@ -5,14 +5,14 @@
 @section('content')
     {{-- Page Title --}}
     <div class="pagetitle">
-        <h1>Item Groups</h1>
+        <h1>Items</h1>
         <div class="row">
             <div class="col-md-8">
                 <nav>
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('comapny.master.index') }}">Company Master</a></li>
-                        <li class="breadcrumb-item active">Item Group</li>
+                        <li class="breadcrumb-item active">Item</li>
                     </ol>
                 </nav>
             </div>
@@ -29,23 +29,23 @@
                             <table class="table table-striped w-100" id="CompanyMasterTable">
                                 <thead>
                                     <tr>
-                                        <th>Item Group Name</th>
+                                        <th>Item Name</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 @forelse ($itemGroups as $group)
                                 @php
-                                    $item_group_id = $group['ItemGroupID'];
-                                    $item_status = App\Models\ItemGroup::where('item_group_id',$item_group_id)->first();
+                                    $item_id = $group['ItemID'];
+                                    $item_status = App\Models\ItemGroup::where('item_id',$item_id)->first();
                                     $exist_status = $item_status ? $item_status->status : 0;
                                 @endphp
                                 <tr>
-                                    <td>{{ $group['GroupName'] }}</td>
+                                    <td>{{ $group['ItemName'] }}</td>
                                     <td>
                                         <div class="form-check form-switch me-2">
                                             <input class="form-check-input" type="checkbox" role="switch"
-                                                onchange="ChnageItemGroupStatus('{{ $group['ItemGroupID'] }}', '{{ $group['GroupName'] }}', {{ $company_master_id }})"
+                                                onchange="ChnageItemGroupStatus('{{ $group['ItemID'] }}', '{{ $group['ItemName'] }}', {{ $company_master_id }})"
                                                 name="status" value="1" {{ $exist_status == 1 ? 'checked' : '' }}>
                                         </div>
                                     </td>
@@ -77,8 +77,8 @@
             url: "{{ route('company.itemgroup.update') }}", // Fix route spelling here
             data: {
                 "_token": "{{ csrf_token() }}",
-                "item_group_id": ItemGroupID,
-                "group_name": GroupName,
+                "item_id": ItemGroupID,
+                "item_name": GroupName,
                 "company_master_id": company_master_id,
                 "status": status
             },

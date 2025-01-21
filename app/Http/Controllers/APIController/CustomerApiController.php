@@ -247,156 +247,254 @@ class CustomerApiController extends Controller
     }
 
     // Get Designs using filters (search, sorting);
+    // public function filterDesign(Request $request)
+    // {
+
+    //     try {
+
+    //         $sub_categories = [];
+
+    //         $parent_category = (isset($request->category_id)) ? $request->category_id : '';
+
+    //         $metal = (isset($request->metal_id)) ? $request->metal_id : '';
+
+    //         $gender = (isset($request->gender_id)) ? $request->gender_id : '';
+
+    //         $tag = (isset($request->tag_id)) ? $request->tag_id : [];
+
+    //         $search = (isset($request->search)) ? $request->search : '';
+
+    //         $sort_by = (isset($request->sort_by)) ? $request->sort_by : '';
+
+    //         $minprice = (isset($request->min_price)) ? $request->min_price : '';
+
+    //         $maxprice = (isset($request->max_price)) ? $request->max_price : '';
+
+    //         $offset = (isset($request->offset) && !empty($request->offset)) ? $request->offset : 0;
+
+    //         $user_type = $request->userType;
+
+    //         $user_id = $request->userId;
+
+
+
+    //         if (isset($parent_category) && !empty($parent_category)) {
+
+    //             $sub_categories = Category::where('parent_category', $parent_category)->pluck('id')->toArray();
+    //         }
+
+
+
+    //         $designs = Design::where('status', 1);
+
+
+
+    //         if (isset($search) && !empty($search)) {
+
+    //             // Search Filter
+
+    //             $designs = $designs->where('code', $search);
+    //         } else {
+
+    //             // Category Filter
+
+    //             if (isset($sub_categories) && count($sub_categories) > 0) {
+
+    //                 $designs = $designs->whereIn('category_id', $sub_categories);
+    //             }
+
+
+
+    //             // Gender Filter
+
+    //             if (isset($gender) && !empty($gender)) {
+
+    //                 $designs = $designs->where('gender_id', $gender);
+    //             }
+
+
+
+    //             // Metal Filter
+
+    //             if (isset($metal) && !empty($metal)) {
+
+    //                 $designs = $designs->where('metal_id', $metal);
+    //             }
+
+
+
+    //             // Tags Filter
+
+    //             if (isset($tag) && !empty($tag)) {
+
+    //                 $designs->where(function ($query) use ($tag) {
+
+    //                     $query->orWhereJsonContains('tags', $tag);
+    //                 });
+    //             }
+
+
+
+    //             // Price Range Filter
+
+    //             if (isset($minprice) && !empty($minprice) && isset($maxprice) && !empty($maxprice)) {
+
+    //                 $designs->whereBetween('total_price_18k', [$minprice, $maxprice]);
+    //             }
+
+
+
+    //             // Sort By Filter
+
+    //             if (isset($sort_by) && !empty($sort_by)) {
+
+    //                 if ($sort_by == 'new_added') {
+
+    //                     $designs = $designs->orderBy('created_at', 'DESC');
+    //                 } elseif ($sort_by == 'low_to_high') {
+
+    //                     $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) ASC');
+    //                 } elseif ($sort_by == 'high_to_low') {
+
+    //                     $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) DESC');
+    //                 } else {
+
+    //                     $designs = $designs->where('highest_selling', 1);
+    //                 }
+    //             }
+    //         }
+
+
+
+    //         $total_records = $designs->count();
+
+
+
+    //         if ($user_type == 1) {
+
+    //             $designs = $designs->with(['dealer_collections' => function ($query) use ($user_id) {
+
+    //                 $query->where('user_id', $user_id);
+    //             }])->get()->sortBy(function ($design) {
+
+    //                 return optional($design->dealer_collections)->first()->design_id ?? PHP_INT_MAX;
+    //             })->values();
+
+    //             $designs = $designs->slice($offset, 40);
+    //         } else {
+
+    //             $designs = $designs->orderBy('updated_at', 'DESC')->offset($offset)->limit(40)->get();
+    //         }
+
+
+
+    //         $datas = new DesignsResource($designs, $sub_categories, $total_records);
+
+    //         return $this->sendApiResponse(true, 1, 'Designs has been Loaded.', $datas);
+    //     } catch (\Throwable $th) {
+
+    //         return $this->sendApiResponse(false, 0, 'Failed to Load Designs!', (object)[]);
+    //     }
+    // }
+
     public function filterDesign(Request $request)
     {
-
+       
         try {
-
             $sub_categories = [];
-
-            $parent_category = (isset($request->category_id)) ? $request->category_id : '';
-
-            $metal = (isset($request->metal_id)) ? $request->metal_id : '';
-
-            $gender = (isset($request->gender_id)) ? $request->gender_id : '';
-
-            $tag = (isset($request->tag_id)) ? $request->tag_id : [];
-
-            $search = (isset($request->search)) ? $request->search : '';
-
-            $sort_by = (isset($request->sort_by)) ? $request->sort_by : '';
-
-            $minprice = (isset($request->min_price)) ? $request->min_price : '';
-
-            $maxprice = (isset($request->max_price)) ? $request->max_price : '';
-
-            $offset = (isset($request->offset) && !empty($request->offset)) ? $request->offset : 0;
-
+            $parent_category = $request->category_id ?? '';
+            $metal = $request->metal_id ?? '';
+            $gender = $request->gender_id ?? '';
+            $tag = $request->tag_id ?? [];
+            $search = $request->search ?? '';
+            $sort_by = $request->sort_by ?? '';
+            $minprice = $request->min_price ?? '';
+            $maxprice = $request->max_price ?? '';
             $user_type = $request->userType;
-
             $user_id = $request->userId;
 
+            // Default to 1 if the page parameter is not provided
+            $page = $request->page ?? 1;
 
+            // Products per page
+            $limit = 40;
 
-            if (isset($parent_category) && !empty($parent_category)) {
+            // Calculate offset based on the page
+            $offset = ($page - 1) * $limit;
 
+            // Retrieve subcategories if parent_category is provided
+            if (!empty($parent_category)) {
                 $sub_categories = Category::where('parent_category', $parent_category)->pluck('id')->toArray();
             }
 
-
-
             $designs = Design::where('status', 1);
 
-
-
-            if (isset($search) && !empty($search)) {
-
-                // Search Filter
-
+            // Apply filters
+            if (!empty($search)) {
                 $designs = $designs->where('code', $search);
             } else {
-
-                // Category Filter
-
-                if (isset($sub_categories) && count($sub_categories) > 0) {
-
+                if (!empty($sub_categories)) {
                     $designs = $designs->whereIn('category_id', $sub_categories);
                 }
 
-
-
-                // Gender Filter
-
-                if (isset($gender) && !empty($gender)) {
-
+                if (!empty($gender)) {
                     $designs = $designs->where('gender_id', $gender);
                 }
 
-
-
-                // Metal Filter
-
-                if (isset($metal) && !empty($metal)) {
-
+                if (!empty($metal)) {
                     $designs = $designs->where('metal_id', $metal);
                 }
 
-
-
-                // Tags Filter
-
-                if (isset($tag) && !empty($tag)) {
-
+                if (!empty($tag)) {
                     $designs->where(function ($query) use ($tag) {
-
                         $query->orWhereJsonContains('tags', $tag);
                     });
                 }
 
-
-
-                // Price Range Filter
-
-                if (isset($minprice) && !empty($minprice) && isset($maxprice) && !empty($maxprice)) {
-
+                if (!empty($minprice) && !empty($maxprice)) {
                     $designs->whereBetween('total_price_18k', [$minprice, $maxprice]);
                 }
 
-
-
-                // Sort By Filter
-
-                if (isset($sort_by) && !empty($sort_by)) {
-
+                if (!empty($sort_by)) {
                     if ($sort_by == 'new_added') {
-
                         $designs = $designs->orderBy('created_at', 'DESC');
                     } elseif ($sort_by == 'low_to_high') {
-
                         $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) ASC');
                     } elseif ($sort_by == 'high_to_low') {
-
                         $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) DESC');
                     } else {
-
                         $designs = $designs->where('highest_selling', 1);
                     }
                 }
             }
 
-
-
+            // Count total records for pagination
             $total_records = $designs->count();
 
-
-
             if ($user_type == 1) {
-
                 $designs = $designs->with(['dealer_collections' => function ($query) use ($user_id) {
-
                     $query->where('user_id', $user_id);
                 }])->get()->sortBy(function ($design) {
-
                     return optional($design->dealer_collections)->first()->design_id ?? PHP_INT_MAX;
                 })->values();
 
-                $designs = $designs->slice($offset, 40);
+                $designs = $designs->slice($offset, $limit);
             } else {
-
-                $designs = $designs->orderBy('updated_at', 'DESC')->offset($offset)->limit(40)->get();
+                $designs = $designs->orderBy('updated_at', 'DESC')
+                                ->offset($offset)
+                                ->limit($limit)
+                                ->get();
             }
 
-
-
+            // Prepare response data
             $datas = new DesignsResource($designs, $sub_categories, $total_records);
 
-            return $this->sendApiResponse(true, 1, 'Designs has been Loaded.', $datas);
+            return $this->sendApiResponse(true, 1, 'Designs have been loaded.', $datas);
         } catch (\Throwable $th) {
-
-            return $this->sendApiResponse(false, 0, 'Failed to Load Designs!', (object)[]);
+            return $this->sendApiResponse(false, 0, 'Failed to load designs!', (object)[]);
         }
     }
-
+    
 
     // Function for Related Design List from Design
     public function relatedDesigns(Request $request)
@@ -1869,8 +1967,10 @@ class CustomerApiController extends Controller
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
             ],
-            CURLOPT_TIMEOUT => 60,
-            CURLOPT_CONNECTTIMEOUT => 30,
+            CURLOPT_TIMEOUT => 120,
+            CURLOPT_CONNECTTIMEOUT => 60,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_VERBOSE => true
         ]);
 
         // Execute the request
@@ -3202,7 +3302,7 @@ class CustomerApiController extends Controller
     public function CompanyMaster()
     {
         try {
-            $companymaster = CompanyMaster::select('id','company_name','company_tag_id','status')->get();
+            $companymaster = CompanyMaster::where('status', 1)->select('id','company_name','company_tag_id','status')->get();
             return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $companymaster);
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
@@ -3214,7 +3314,7 @@ class CustomerApiController extends Controller
         try {
             $company_master_ids = $request->company_master_id;
             if (is_array($company_master_ids) && !empty($company_master_ids)) {
-                $item_groups = ItemGroup::whereIn('company_master_id', $company_master_ids)->get();
+                $item_groups = ItemGroup::whereIn('company_master_id', $company_master_ids)->where('status',1)->get();
                 return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $item_groups);
             }
         } catch (\Throwable $th) {

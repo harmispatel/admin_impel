@@ -215,6 +215,6 @@ Route::post('order-track-details', [CustomerApiController::class,'orderTrackDeta
 //company master
 
 
-Route::post('comanymaster', [CustomerApiController::class,'CompanyMaster']);
+Route::get('comanymaster', [CustomerApiController::class,'CompanyMaster']);
 
 Route::post('comanymaster-itemgroup', [CustomerApiController::class,'CompanyMasterItemGroup']);

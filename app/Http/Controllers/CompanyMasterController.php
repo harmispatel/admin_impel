@@ -114,7 +114,7 @@ class CompanyMasterController extends Controller
         // Close curl
         curl_close($curl);
         $decodedResponse = json_decode($response, true);
-        $itemGroups = $decodedResponse['Filters']['ItemGroups'] ?? [];
+        $itemGroups = $decodedResponse['Filters']['Items'] ?? [];
        
         return view('admin.company_master.show',compact('itemGroups','company_master_id'));
     }
@@ -122,14 +122,14 @@ class CompanyMasterController extends Controller
     public function updateItemGroup(Request $request)
     {
         try {
-            $item_goups = ItemGroup::where('item_group_id',$request->item_group_id)->first();
+            $item_goups = ItemGroup::where('item_id',$request->item_id)->first();
             if(!empty($item_goups)){
                 $item_goups->status = $request->status;
                 $item_goups->update();
             }else{
                 $item_goup = new ItemGroup();
-                $item_goup->item_group = $request->group_name;
-                $item_goup->item_group_id = $request->item_group_id;
+                $item_goup->item_name = $request->item_name;
+                $item_goup->item_id = $request->item_id;
                 $item_goup->company_master_id = $request->company_master_id;
                 $item_goup->status = $request->status;
                 $item_goup->save();
