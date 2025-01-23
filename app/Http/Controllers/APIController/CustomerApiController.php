@@ -18,6 +18,10 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Infobip\Configuration;
+
+//use Infobip\Configuration;
+
 class CustomerApiController extends Controller
 {
     use ImageTrait;
@@ -246,157 +250,6 @@ class CustomerApiController extends Controller
         }
     }
 
-    // Get Designs using filters (search, sorting);
-    // public function filterDesign(Request $request)
-    // {
-
-    //     try {
-
-    //         $sub_categories = [];
-
-    //         $parent_category = (isset($request->category_id)) ? $request->category_id : '';
-
-    //         $metal = (isset($request->metal_id)) ? $request->metal_id : '';
-
-    //         $gender = (isset($request->gender_id)) ? $request->gender_id : '';
-
-    //         $tag = (isset($request->tag_id)) ? $request->tag_id : [];
-
-    //         $search = (isset($request->search)) ? $request->search : '';
-
-    //         $sort_by = (isset($request->sort_by)) ? $request->sort_by : '';
-
-    //         $minprice = (isset($request->min_price)) ? $request->min_price : '';
-
-    //         $maxprice = (isset($request->max_price)) ? $request->max_price : '';
-
-    //         $offset = (isset($request->offset) && !empty($request->offset)) ? $request->offset : 0;
-
-    //         $user_type = $request->userType;
-
-    //         $user_id = $request->userId;
-
-
-
-    //         if (isset($parent_category) && !empty($parent_category)) {
-
-    //             $sub_categories = Category::where('parent_category', $parent_category)->pluck('id')->toArray();
-    //         }
-
-
-
-    //         $designs = Design::where('status', 1);
-
-
-
-    //         if (isset($search) && !empty($search)) {
-
-    //             // Search Filter
-
-    //             $designs = $designs->where('code', $search);
-    //         } else {
-
-    //             // Category Filter
-
-    //             if (isset($sub_categories) && count($sub_categories) > 0) {
-
-    //                 $designs = $designs->whereIn('category_id', $sub_categories);
-    //             }
-
-
-
-    //             // Gender Filter
-
-    //             if (isset($gender) && !empty($gender)) {
-
-    //                 $designs = $designs->where('gender_id', $gender);
-    //             }
-
-
-
-    //             // Metal Filter
-
-    //             if (isset($metal) && !empty($metal)) {
-
-    //                 $designs = $designs->where('metal_id', $metal);
-    //             }
-
-
-
-    //             // Tags Filter
-
-    //             if (isset($tag) && !empty($tag)) {
-
-    //                 $designs->where(function ($query) use ($tag) {
-
-    //                     $query->orWhereJsonContains('tags', $tag);
-    //                 });
-    //             }
-
-
-
-    //             // Price Range Filter
-
-    //             if (isset($minprice) && !empty($minprice) && isset($maxprice) && !empty($maxprice)) {
-
-    //                 $designs->whereBetween('total_price_18k', [$minprice, $maxprice]);
-    //             }
-
-
-
-    //             // Sort By Filter
-
-    //             if (isset($sort_by) && !empty($sort_by)) {
-
-    //                 if ($sort_by == 'new_added') {
-
-    //                     $designs = $designs->orderBy('created_at', 'DESC');
-    //                 } elseif ($sort_by == 'low_to_high') {
-
-    //                     $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) ASC');
-    //                 } elseif ($sort_by == 'high_to_low') {
-
-    //                     $designs = $designs->orderByRaw('CAST(total_price_18k as DECIMAL(8,2)) DESC');
-    //                 } else {
-
-    //                     $designs = $designs->where('highest_selling', 1);
-    //                 }
-    //             }
-    //         }
-
-
-
-    //         $total_records = $designs->count();
-
-
-
-    //         if ($user_type == 1) {
-
-    //             $designs = $designs->with(['dealer_collections' => function ($query) use ($user_id) {
-
-    //                 $query->where('user_id', $user_id);
-    //             }])->get()->sortBy(function ($design) {
-
-    //                 return optional($design->dealer_collections)->first()->design_id ?? PHP_INT_MAX;
-    //             })->values();
-
-    //             $designs = $designs->slice($offset, 40);
-    //         } else {
-
-    //             $designs = $designs->orderBy('updated_at', 'DESC')->offset($offset)->limit(40)->get();
-    //         }
-
-
-
-    //         $datas = new DesignsResource($designs, $sub_categories, $total_records);
-
-    //         return $this->sendApiResponse(true, 1, 'Designs has been Loaded.', $datas);
-    //     } catch (\Throwable $th) {
-
-    //         return $this->sendApiResponse(false, 0, 'Failed to Load Designs!', (object)[]);
-    //     }
-    // }
-
     public function filterDesign(Request $request)
     {
        
@@ -504,29 +357,31 @@ class CustomerApiController extends Controller
 
             $id = $request->categoryId;
 
-            $offset = (isset($request->offset)) ? $request->offset : 0;
-
+            //$offset = (isset($request->offset)) ? $request->offset : 0;
+        
+            $page = $request->page ?? 1;
+           
             $sub_categories = Category::where('parent_category', $id)->pluck('id');
-
+          
             $total_designs =  Design::whereIn('category_id', $sub_categories)->count();
 
-            $designs = Design::whereIn('category_id', $sub_categories)->with('categories')->offset($offset)->limit(20)->get();
+            $designs = Design::whereIn('category_id', $sub_categories)->with('categories')
+            //->offset($offset)->limit($limit)->get();
+            ->paginate(40, ['*'], 'page', $page);
+
 
             $data = new DesignsResource($designs, null, $total_designs);
+            
+            $category_name = Category::where('id',$request->categoryId)->first();
 
             return response()->json([
-
                 'success' => true,
-
                 'message' => 'Related Design Loaded SuccessFully',
-
-                'category_name' => '',
-
+                'category_name' => $category_name->name,
                 'data'    => $data,
-
             ], Response::HTTP_OK);
-        } catch (\Throwable $th) {
 
+        } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Failed to Load Designs!', (object)[]);
         }
     }
@@ -1615,50 +1470,50 @@ class CustomerApiController extends Controller
         }
     }
 
-       // Function for Check Payment Status
-       public function checkPhonepePaymentStatus($transaction_id)
-       {
-           $admin_settings = getAdminSettings();
-           $phonepe_live = (isset($admin_settings['phonepe_live']) && !empty($admin_settings['phonepe_live'])) ? $admin_settings['phonepe_live'] : 0;
-   
-           if ($phonepe_live == 1) {
-               $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_live_merchant_id'])) ? $admin_settings['phonepe_live_merchant_id'] : '';
-               $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_live_salt_key'])) ? $admin_settings['phonepe_live_salt_key'] : '';
-               $phonepe_url = 'https://api.phonepe.com/apis/hermes/pg/v1/status/';
-           } else {
-               $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_sandbox_merchant_id'])) ? $admin_settings['phonepe_sandbox_merchant_id'] : '';
-               $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_sandbox_salt_key'])) ? $admin_settings['phonepe_sandbox_salt_key'] : '';
-               $phonepe_url = 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/';
-           }
-   
-           $saltKey = $phonepe_cred['salt_key'];
-           $saltIndex = 1;
-           $path = '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id;
-           $finalXHeader = hash('sha256', $path . $saltKey) . '###' . $saltIndex;
-           
-           $curl = curl_init();
-           curl_setopt_array($curl, array(
-               CURLOPT_URL => $phonepe_url . $phonepe_cred['merchant_id'] . '/' . $transaction_id,
-               CURLOPT_RETURNTRANSFER => true,
-               CURLOPT_ENCODING => '',
-               CURLOPT_MAXREDIRS => 10,
-               CURLOPT_TIMEOUT => 0,
-               CURLOPT_FOLLOWLOCATION => false,
-               CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-               CURLOPT_CUSTOMREQUEST => 'GET',
-               CURLOPT_HTTPHEADER => array(
-                   'Content-Type: application/json',
-                   'accept: application/json',
-                   'X-VERIFY: ' . $finalXHeader,
-                   'X-MERCHANT-ID: ' . $phonepe_cred['merchant_id']
-               ),
-           ));
-   
-           $response = curl_exec($curl);
-           curl_close($curl);
-   
-           return json_decode($response);
-       }
+    // Function for Check Payment Status
+    public function checkPhonepePaymentStatus($transaction_id)
+    {
+        $admin_settings = getAdminSettings();
+        $phonepe_live = (isset($admin_settings['phonepe_live']) && !empty($admin_settings['phonepe_live'])) ? $admin_settings['phonepe_live'] : 0;
+
+        if ($phonepe_live == 1) {
+            $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_live_merchant_id'])) ? $admin_settings['phonepe_live_merchant_id'] : '';
+            $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_live_salt_key'])) ? $admin_settings['phonepe_live_salt_key'] : '';
+            $phonepe_url = 'https://api.phonepe.com/apis/hermes/pg/v1/status/';
+        } else {
+            $phonepe_cred['merchant_id'] = (isset($admin_settings['phonepe_sandbox_merchant_id'])) ? $admin_settings['phonepe_sandbox_merchant_id'] : '';
+            $phonepe_cred['salt_key'] = (isset($admin_settings['phonepe_sandbox_salt_key'])) ? $admin_settings['phonepe_sandbox_salt_key'] : '';
+            $phonepe_url = 'https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/';
+        }
+
+        $saltKey = $phonepe_cred['salt_key'];
+        $saltIndex = 1;
+        $path = '/pg/v1/status/' . $phonepe_cred['merchant_id'] . '/' . $transaction_id;
+        $finalXHeader = hash('sha256', $path . $saltKey) . '###' . $saltIndex;
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $phonepe_url . $phonepe_cred['merchant_id'] . '/' . $transaction_id,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'accept: application/json',
+                'X-VERIFY: ' . $finalXHeader,
+                'X-MERCHANT-ID: ' . $phonepe_cred['merchant_id']
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        return json_decode($response);
+    }
 
     // function for Get All States
     public function getStateCities(Request $request)
@@ -2725,7 +2580,7 @@ class CustomerApiController extends Controller
         return $response;
     }
 
-    //cancel delivery
+    //cancel deliveryPdf
     public function CancelDelivery(Request $request)
     {
         $curl = curl_init();
@@ -2906,79 +2761,6 @@ class CustomerApiController extends Controller
         return $response;
     }
 
-    // public function SendOrderTrackMessage($order_id,$phone,$email,$time_date,$status)
-    // {
-    //     $text = "Dear customer your Order no - #({$order_id}) Delivered at ({$time_date}). See you soon again";
-
-    //     $dlttemplateid = 1707172899343565302;
-    //     $subject = "Order Delivered Confirmation";
-        
-    //     $curl = curl_init();
-    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
-    //     $senderid = 'IMPELE';
-    //     $channel = 2;
-    //     $DCS = 0;
-    //     $flashsms = 0;
-    //     $route = 31;
-    //     $EntityId = 1701172630214402951;
-    //     // Set the POST URL
-    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
-
-    //     // Set the query parameters
-    //     $queryParams = http_build_query([
-    //         'APIKey' => $APIKey,
-    //         'senderid' => $senderid,
-    //         'channel' => $channel,
-    //         'DCS' => $DCS,
-    //         'flashsms' => $flashsms,
-    //         'number' => $phone,
-    //         'text' => $text,
-    //         'route' => $route,
-    //         'EntityId' => $EntityId,
-    //         'dlttemplateid' => $dlttemplateid
-    //     ]);
-    
-    //     // Set curl options
-    //     curl_setopt_array($curl, [
-    //         CURLOPT_URL => $url.'?' . $queryParams,
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_TIMEOUT => 30,
-    //         CURLOPT_CONNECTTIMEOUT => 10,
-    //     ]);
-
-    //     // Execute the request
-    //     $response = curl_exec($curl);
-
-    //     // Check for errors
-    //     if (curl_errno($curl)) {
-    //         $error = curl_error($curl);
-    //         curl_close($curl);
-    //         return response()->json(['error' => $error], 500);
-    //     }
-
-    //     // Close cURL
-    //     curl_close($curl);
-    //     $responseData = json_decode($response, true);
-        
-    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') 
-    //     {
-    //         try {
-    //             if ($status == 'SDELVD') {
-    //                 Mail::send('mail.complated_order',['title' => $text],function ($message) use ($email,$subject) {
-    //                     $message->from(env('MAIL_USERNAME'));
-    //                     $message->to($email);
-    //                     $message->subject($subject);
-    //                 });
-    //             }
-    //         } catch (\Throwable $th) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Mail Not Send!',
-    //             ]);
-    //         }
-    //     }
-    // }
-
     //PDF
     public function addPdfDesign(Request $request)
     {
@@ -2987,10 +2769,24 @@ class CustomerApiController extends Controller
             $email = $request->email;
 
             $user = User::where('email',$email)->first();
+
+            $design = Design::where('id',$design_id)->first();
+            
+            $imagePath = (isset($design->image) && file_exists(public_path('images/uploads/item_images/'.$design->code.'/'.$design->image))) ? public_path('images/uploads/item_images/'.$design->code.'/'.$design->image) : public_path('images/default_images/not-found/no_img1.jpg');
+            if (file_exists($imagePath)) {
+                $imageData = file_get_contents($imagePath);
+                $base64Image = base64_encode($imageData);
+                $image = 'data:image/jpeg;base64,' . $base64Image; 
+            } else {
+                $imageData = file_get_contents(public_path('images/default_images/not-found/no_img1.jpg'));
+                $base64Image = base64_encode($imageData);
+                $image = 'data:image/jpeg;base64,' . $base64Image; 
+            }
             
             $pdf = new DesignPdf();
             $pdf->user_id = $user->id;
             $pdf->design_id = $design_id;
+            $pdf->design_image = $image;
             $pdf->save();
 
             return response()->json([
@@ -2999,6 +2795,7 @@ class CustomerApiController extends Controller
             ]);
 
         } catch (\Throwable $th) {
+            dd($th);
             return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
         }
     }
@@ -3029,18 +2826,45 @@ class CustomerApiController extends Controller
         }
     }
 
+    // public function removeDesign(Request $request)
+    // {
+    //     try {
+    //         $email = $request->email;
+    //         $designId = $request->design_ids;
+    //         $user = User::where('email', $email)->first();
+    //         $userId = $user->id;
+
+    //         $pdf = DesignPdf::where('user_id', $userId)->where('design_id', $designId)->first();
+            
+    //         if ($pdf) {
+    //             $deletepdfdesign = DesignPdf::find($pdf->id);
+    //             $deletepdfdesign->delete();
+    //                 return response()->json([
+    //                     'success' => true,
+    //                     'message' => 'Remove Design SuccessFully'
+    //                 ]);
+    //         } else {
+    //                 return response()->json([
+    //                     'success' => true,
+    //                     'message' => 'Design in pdf Not Found'
+    //                 ]);
+    //         }
+    //     } catch (\Throwable $th) {
+    //         return $this->sendApiResponse(false, 0, 'Something went Wrong!', (object)[]);
+    //     }
+    // }
+
     public function removePdfDesign(Request $request)
     {
         try {
             $email = $request->email;
-            $designId = $request->design_id;
+            $designId = $request->design_ids;
             $user = User::where('email', $email)->first();
             $userId = $user->id;
 
-            $pdf = DesignPdf::where('user_id', $userId)->where('design_id', $designId)->first();
+            $pdf = DesignPdf::where('user_id', $userId)->whereIn('design_id', $designId)->delete();
+          
             if ($pdf) {
-                $deletepdfdesign = DesignPdf::find($pdf->id);
-                $deletepdfdesign->delete();
                     return response()->json([
                         'success' => true,
                         'message' => 'Remove Design SuccessFully'
@@ -3079,6 +2903,19 @@ class CustomerApiController extends Controller
 
         $user =  User::where('email', $request->email)->first();
 
+        if (isset($request->barcode)) {
+            $imageUrl = "https://api.indianjewelcast.com/TagImage/{$request->barcode}.jpg";
+            $imageData = file_get_contents($imageUrl);
+            if ($imageData !== false) {
+                $base64Image = base64_encode($imageData);
+                $design_image = 'data:image/jpeg;base64,' . $base64Image;
+            } else {
+                $design_image = '';
+            }
+        } else {
+            $design_image = '';
+        }
+
         $input = [
             'user_id' => $user->id,
             'company_id' => $request->company_id,
@@ -3097,6 +2934,7 @@ class CustomerApiController extends Controller
             'making_charge'=> $request->making_charge ?? 0,
             'making_charge_discount'=> $request->making_charge_discount ?? 0,
             'total_amount'=> $request->total_amount ?? 0,
+            'design_image'=> $design_image
         ];
 
         $is_exists = ReadyToPdf::where('user_id', $user->id)->where('tag_no', $request->tag_no)->first();
@@ -3142,19 +2980,22 @@ class CustomerApiController extends Controller
     public function readyPdfRemove(Request $request)
     {
         try {
-            $validatedData = Validator::make($request->all(), [
-                'ready_pdf_id' => 'required|exists:ready_to_pdfs,id',
-            ]);
+            // $validatedData = Validator::make($request->all(), [
+            //     'design_ids' => 'required|exists:ready_to_pdfs,id',
+            // ]);
 
-            if ($validatedData->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => $validatedData->errors()->first()
-                ]);
-            }
+            // if ($validatedData->fails()) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => $validatedData->errors()->first()
+            //     ]);
+            // }
             
-            $pdf_item = ReadyToPdf::where('id', $request->ready_pdf_id)->first();
-            $pdf_item->delete();
+            $designIds = $request->design_ids; 
+        
+
+            $pdf_item = ReadyToPdf::whereIn('barcode', $designIds)->delete();
+           // $pdf_item->delete();
 
             return response()->json([
                 'success' => true,
@@ -3166,72 +3007,7 @@ class CustomerApiController extends Controller
         }
     }
 
-    // public function orderTrackDetails(Request $request)
-    // {
-    //     try {
-
-    //         $validatedData = Validator::make($request->all(), [
-    //             'docate_number' => 'required',
-    //         ]);
-
-    //         if ($validatedData->fails()) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => $validatedData->errors()->first()
-    //             ]);
-    //         }
-
-    //         $order = Order::where('docate_number',$request->docate_number)->first();
-    //         $order_ready = ReadyOrder::where('docate_number',$request->docate_number)->first();
-          
-    //         if (!$order && !$order_ready) {
-    //             return $this->sendApiResponse(false, 0, 'Order not found.', (object)[]);
-    //         }
-
-    //         if(!empty($order)){
-    //             $order_id = $order->id;
-    //             $user_id = $order->user_id;
-    //             $order_type = "make_by_order";
-    //         }else{
-    //             $order_id = $order_ready->id;
-    //             $user_id = $order_ready->user_id;
-    //             $order_type = "ready_to_dispatch";
-    //         }
-
-    //         $user = User::find($user_id);
-    //         if (!$user) {
-    //             return $this->sendApiResponse(false, 0, 'User not found.', (object)[]);
-    //         }
-    //         $user_type = $user->user_type;
-          
-
-    //         $order_details = null;
-    //         if($order_type == "ready_to_dispatch"){
-               
-    //             if(isset($user_type) && $user_type == 1){
-    //                 $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
-    //             }else{
-                 
-    //                 $order_details = ReadyOrder::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
-                  
-    //             }
-    //             $data = new ReadyOrderDetailsResource($order_details);
-
-    //         }else{
-    //             if ($user->user_type == 1) {
-    //                 $order_details = Order::with(['order_items'])->where('id', $order_id)->where('dealer_id', $user_id)->first();
-    //             } else {
-    //                 $order_details = Order::with(['order_items'])->where('id', $order_id)->where('user_id', $user_id)->first();
-    //             }
-    //             $data = new OrderDetailsResource($order_details);
-    //         }
-    //         return $this->sendApiResponse(true, 0, 'Order Details has been Fetched.', $data);
-            
-    //     } catch (\Throwable $th) {
-    //         return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
-    //     }
-    // }
-
+    
     public function orderTrackDetails(Request $request)
     {
         try {
@@ -3322,4 +3098,99 @@ class CustomerApiController extends Controller
         }
     }
 
+
+    public function SendOtp(Request $request)
+    {
+        $validatedData = Validator::make($request->all(), [
+            'number' => 'required'
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validatedData->errors()->first()
+            ]);
+        }
+
+        $curl = curl_init();
+        $number = $request->number;
+        $otp = rand(100000, 999999); 
+        $APIKey = 'q9o165ctikCFWUQWnqLBww';
+        $senderid = 'IMPELE';
+        $channel = 2;
+        $DCS = 0;
+        $flashsms = 0;
+        $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
+        $route = 31;
+        $EntityId = 1701172630214402951;
+        $dlttemplateid = 1707172648675000362;
+
+        // Set the POST URL
+        $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+
+        // Set the query parameters
+        $queryParams = http_build_query([
+            'APIKey' => $APIKey,
+            'senderid' => $senderid,
+            'channel' => $channel,
+            'DCS' => $DCS,
+            'flashsms' => $flashsms,
+            'number' => $number,
+            'text' => $text,
+            'route' => $route,
+            'EntityId' => $EntityId,
+            'dlttemplateid' => $dlttemplateid
+        ]);
+
+        // Set curl options
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url.'?' . $queryParams,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
+        ]);
+
+        // Execute the request
+        $response = curl_exec($curl);
+
+        // Check for errors
+        if (curl_errno($curl)) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            return response()->json(['error' => $error], 500);
+        }
+
+        // Close cURL
+        curl_close($curl);
+        $responseData = json_decode($response, true);
+
+        if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
+            $now = now();
+           
+            $user = UserOtp::where('number',$number)->first();
+            if(!empty($user)){
+                $user->delete();
+            }
+
+            UserOtp::create([
+                'number' => $number,
+                'otp' => $otp,
+                'expire_at' => $now->addMinutes(3),
+            ]);
+        }
+        return response()->json([
+            'status' => true,
+            'message' => "Otp Send Successfully"
+        ]);
+    }
+
+    public function sendWhatsappMessage()
+    {
+        $host = '2v8qqz.api.infobip.com';
+            $apiKey = '4a966396254536dcd8e8dd240f3ae5a7-a642f3b1-bcbb-4af0-84de-f9627f009796';
+            $configuration = new Configuration(
+                host: $host,
+                apiKey: $apiKey
+            );
+    }
 }

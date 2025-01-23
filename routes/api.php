@@ -185,12 +185,6 @@ Route::post('login-with-otp', [CustomerApiController::class, 'loginWithOtp']);
 
 Route::post('check-service-ability', [CustomerApiController::class,'checkServiceability']);
 
-//PDF
-Route::post('add-pdf-design', [CustomerApiController::class,'addPdfDesign']);
-
-Route::post('pdf-design-list', [CustomerApiController::class,'listPdfDesign']);
-
-Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign']);
 
 
 //seqaul api order
@@ -208,6 +202,14 @@ Route::post('delivery-track', [CustomerApiController::class,'DeliveryTrack']);
 Route::post('ready-to-pdf-store', [CustomerApiController::class,'ReadyToPdf']);
 Route::post('ready-to-pdf-list', [CustomerApiController::class,'ReadtToPdfList']);
 Route::post('ready-to-pdf-delete', [CustomerApiController::class,'readyPdfRemove']);
+
+
+//PDF
+Route::post('add-pdf-design', [CustomerApiController::class,'addPdfDesign']);
+Route::post('pdf-design-list', [CustomerApiController::class,'listPdfDesign']);
+Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign']);
+
+
 
 Route::post('order-track-details', [CustomerApiController::class,'orderTrackDetails']);
 
