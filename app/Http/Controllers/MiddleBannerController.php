@@ -242,10 +242,23 @@ class MiddleBannerController extends Controller
 
             $middle_banner = MiddleBanner::find(decrypt($request->id));
 
-            $input = $request->except(['_token', 'image','tag','id']);
+            $input = $request->except(['_token', 'image','tag','id','link']);
 
-            $input['tag_id'] = $request->tag;
+           // $input['tag_id'] = $request->tag;
 
+            $url = $request->link;
+            $tag_id = null;
+
+            // if ($url) {
+            //     $parsed_url = parse_url($url); 
+            //     if (isset($parsed_url['query'])) {
+            //         parse_str($parsed_url['query'], $query_params);
+            //         $tag_id = $query_params['tag_id'] ?? null;
+            //     }
+            // }
+
+            $input['tag_id'] = $tag_id; 
+            $input['tag_link'] = $url;
 
 
             if($request->hasFile('image')){

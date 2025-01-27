@@ -18,9 +18,6 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Infobip\Configuration;
-
-//use Infobip\Configuration;
 
 class CustomerApiController extends Controller
 {
@@ -3099,98 +3096,162 @@ class CustomerApiController extends Controller
     }
 
 
-    public function SendOtp(Request $request)
-    {
-        $validatedData = Validator::make($request->all(), [
-            'number' => 'required'
-        ]);
+    // public function SendOtp(Request $request)
+    // {
+    //     $validatedData = Validator::make($request->all(), [
+    //         'number' => 'required'
+    //     ]);
 
-        if ($validatedData->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => $validatedData->errors()->first()
-            ]);
-        }
+    //     if ($validatedData->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validatedData->errors()->first()
+    //         ]);
+    //     }
 
-        $curl = curl_init();
-        $number = $request->number;
-        $otp = rand(100000, 999999); 
-        $APIKey = 'q9o165ctikCFWUQWnqLBww';
-        $senderid = 'IMPELE';
-        $channel = 2;
-        $DCS = 0;
-        $flashsms = 0;
-        $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
-        $route = 31;
-        $EntityId = 1701172630214402951;
-        $dlttemplateid = 1707172648675000362;
+    //     $curl = curl_init();
+    //     $number = $request->number;
+    //     $otp = rand(100000, 999999); 
+    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
+    //     $senderid = 'IMPELE';
+    //     $channel = 2;
+    //     $DCS = 0;
+    //     $flashsms = 0;
+    //     $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
+    //     $route = 31;
+    //     $EntityId = 1701172630214402951;
+    //     $dlttemplateid = 1707172648675000362;
 
-        // Set the POST URL
-        $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+    //     // Set the POST URL
+    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
 
-        // Set the query parameters
-        $queryParams = http_build_query([
-            'APIKey' => $APIKey,
-            'senderid' => $senderid,
-            'channel' => $channel,
-            'DCS' => $DCS,
-            'flashsms' => $flashsms,
-            'number' => $number,
-            'text' => $text,
-            'route' => $route,
-            'EntityId' => $EntityId,
-            'dlttemplateid' => $dlttemplateid
-        ]);
+    //     // Set the query parameters
+    //     $queryParams = http_build_query([
+    //         'APIKey' => $APIKey,
+    //         'senderid' => $senderid,
+    //         'channel' => $channel,
+    //         'DCS' => $DCS,
+    //         'flashsms' => $flashsms,
+    //         'number' => $number,
+    //         'text' => $text,
+    //         'route' => $route,
+    //         'EntityId' => $EntityId,
+    //         'dlttemplateid' => $dlttemplateid
+    //     ]);
 
-        // Set curl options
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url.'?' . $queryParams,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 10,
-        ]);
+    //     // Set curl options
+    //     curl_setopt_array($curl, [
+    //         CURLOPT_URL => $url.'?' . $queryParams,
+    //         CURLOPT_RETURNTRANSFER => true,
+    //         CURLOPT_TIMEOUT => 30,
+    //         CURLOPT_CONNECTTIMEOUT => 10,
+    //     ]);
 
-        // Execute the request
-        $response = curl_exec($curl);
+    //     // Execute the request
+    //     $response = curl_exec($curl);
 
-        // Check for errors
-        if (curl_errno($curl)) {
-            $error = curl_error($curl);
-            curl_close($curl);
-            return response()->json(['error' => $error], 500);
-        }
+    //     // Check for errors
+    //     if (curl_errno($curl)) {
+    //         $error = curl_error($curl);
+    //         curl_close($curl);
+    //         return response()->json(['error' => $error], 500);
+    //     }
 
-        // Close cURL
-        curl_close($curl);
-        $responseData = json_decode($response, true);
+    //     // Close cURL
+    //     curl_close($curl);
+    //     $responseData = json_decode($response, true);
 
-        if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
-            $now = now();
+    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
+    //         $now = now();
            
-            $user = UserOtp::where('number',$number)->first();
-            if(!empty($user)){
-                $user->delete();
-            }
+    //         $user = UserOtp::where('number',$number)->first();
+    //         if(!empty($user)){
+    //             $user->delete();
+    //         }
 
-            UserOtp::create([
-                'number' => $number,
-                'otp' => $otp,
-                'expire_at' => $now->addMinutes(3),
-            ]);
-        }
-        return response()->json([
-            'status' => true,
-            'message' => "Otp Send Successfully"
-        ]);
-    }
+    //         UserOtp::create([
+    //             'number' => $number,
+    //             'otp' => $otp,
+    //             'expire_at' => $now->addMinutes(3),
+    //         ]);
+    //     }
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => "Otp Send Successfully"
+    //     ]);
+    // }
 
-    public function sendWhatsappMessage()
-    {
-        $host = '2v8qqz.api.infobip.com';
-            $apiKey = '4a966396254536dcd8e8dd240f3ae5a7-a642f3b1-bcbb-4af0-84de-f9627f009796';
-            $configuration = new Configuration(
-                host: $host,
-                apiKey: $apiKey
-            );
-    }
+    // public function sendMessage(Request $request)
+    // {
+    //     $curl = curl_init();
+    //     $number = $request->number;
+    //     $otp = rand(100000, 999999); 
+    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
+    //     $senderid = 'IMPELE';
+    //     $channel = 2;
+    //     $DCS = 0;
+    //     $flashsms = 0;
+    //     $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
+    //     $route = 31;
+    //     $EntityId = 1701172630214402951;
+    //     $dlttemplateid = 1707172648675000362;
+
+    //     // Set the POST URL
+    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
+
+    //     // Set the query parameters
+    //     $queryParams = http_build_query([
+    //         'APIKey' => $APIKey,
+    //         'senderid' => $senderid,
+    //         'channel' => $channel,
+    //         'DCS' => $DCS,
+    //         'flashsms' => $flashsms,
+    //         'number' => $number,
+    //         'text' => $text,
+    //         'route' => $route,
+    //         'EntityId' => $EntityId,
+    //         'dlttemplateid' => $dlttemplateid
+    //     ]);
+
+    //     // Set curl options
+    //     curl_setopt_array($curl, [
+    //         CURLOPT_URL => $url.'?' . $queryParams,
+    //         CURLOPT_RETURNTRANSFER => true,
+    //         CURLOPT_TIMEOUT => 30,
+    //         CURLOPT_CONNECTTIMEOUT => 10,
+    //     ]);
+
+    //     // Execute the request
+    //     $response = curl_exec($curl);
+
+    //     // Check for errors
+    //     if (curl_errno($curl)) {
+    //         $error = curl_error($curl);
+    //         curl_close($curl);
+    //         return response()->json(['error' => $error], 500);
+    //     }
+
+    //     // Close cURL
+    //     curl_close($curl);
+    //     $responseData = json_decode($response, true);
+
+    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
+    //         $now = now();
+           
+    //         $user = UserOtp::where('number',$number)->first();
+    //         if(!empty($user)){
+    //             $user->delete();
+    //         }
+
+    //         UserOtp::create([
+    //             'number' => $number,
+    //             'otp' => $otp,
+    //             'expire_at' => $now->addMinutes(3),
+    //         ]);
+    //     }
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => "Otp Send Successfully"
+    //     ]);
+    // }
 }

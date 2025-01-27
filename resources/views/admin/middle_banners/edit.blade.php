@@ -106,6 +106,25 @@
 
                                             <div class="col-md-6 mb-3">
 
+                                                <label for="link" class="form-label">Link <span class="text-danger">*</span></label>
+
+                                                <input type="text" name="link" value="{{ $middle_banner['tag_link'] }}" class="form-control {{ ($errors->has('link')) ? 'is-invalid' : '' }}">
+                                                
+
+                                                @if($errors->has('link'))
+
+                                                    <div class="invalid-feedback">
+
+                                                        {{ $errors->first('link') }}
+
+                                                    </div>
+
+                                                @endif
+
+                                            </div>
+
+                                            <!-- <div class="col-md-6 mb-3">
+
                                                 <label for="tag" class="form-label">Tag <span class="text-danger">*</span></label>
 
                                                 <select name="tag" id="tag" class="form-select {{ ($errors->has('tag')) ? 'is-invalid' : '' }}">
@@ -134,7 +153,7 @@
 
                                                 @endif
 
-                                            </div>
+                                            </div> -->
 
                                             <div class="col-md-12 mb-3">
 
