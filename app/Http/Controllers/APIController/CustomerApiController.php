@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ItemGroup, ReadyOrder, ReadyOrderItem, ReadyToPdf, UserOtp};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ItemGroup, ReadyOrder, ReadyOrderItem, ReadyToPdf, surveyOtp, UserOtp};
 use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, ReadyPdfListResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
 use GuzzleHttp\Client;
@@ -3117,7 +3117,7 @@ class CustomerApiController extends Controller
     //     $channel = 2;
     //     $DCS = 0;
     //     $flashsms = 0;
-    //     $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
+    //     $text = "Welcome to Impel, {$otp} is your OTP Please Verify.";
     //     $route = 31;
     //     $EntityId = 1701172630214402951;
     //     $dlttemplateid = 1707172648675000362;
@@ -3164,12 +3164,12 @@ class CustomerApiController extends Controller
     //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
     //         $now = now();
            
-    //         $user = UserOtp::where('number',$number)->first();
+    //         $user = surveyOtp::where('number',$number)->first();
     //         if(!empty($user)){
     //             $user->delete();
     //         }
 
-    //         UserOtp::create([
+    //         surveyOtp::create([
     //             'number' => $number,
     //             'otp' => $otp,
     //             'expire_at' => $now->addMinutes(3),
@@ -3181,17 +3181,34 @@ class CustomerApiController extends Controller
     //     ]);
     // }
 
-    // public function sendMessage(Request $request)
+    // public function SendMessage(Request $request)
     // {
-    //     $curl = curl_init();
+    //     $validatedData = Validator::make($request->all(), [
+    //         'number' => 'required',
+    //     ]);
+
+    //     if ($validatedData->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validatedData->errors()->first()
+    //         ]);
+    //     }
+
+    //     $name = $request->name;
     //     $number = $request->number;
+    //     $city = $request->city;
+    //     $state = $request->state;
+    //     $address = $request->address;
+    //     $coupen = $request->coupen;
+
+    //     $curl = curl_init();
     //     $otp = rand(100000, 999999); 
     //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
     //     $senderid = 'IMPELE';
     //     $channel = 2;
     //     $DCS = 0;
     //     $flashsms = 0;
-    //     $text = "Welcome to Impel, {$otp} is your login OTP Please Verify";
+    //     $text = "Welcome to Impel, {$otp} is your OTP for Impel Please Verify.";
     //     $route = 31;
     //     $EntityId = 1701172630214402951;
     //     $dlttemplateid = 1707172648675000362;
@@ -3236,22 +3253,20 @@ class CustomerApiController extends Controller
     //     $responseData = json_decode($response, true);
 
     //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
-    //         $now = now();
-           
-    //         $user = UserOtp::where('number',$number)->first();
-    //         if(!empty($user)){
-    //             $user->delete();
-    //         }
-
-    //         UserOtp::create([
+     
+    //         surveyOtp::create([
+    //             'name' => $name,
     //             'number' => $number,
-    //             'otp' => $otp,
-    //             'expire_at' => $now->addMinutes(3),
+    //             'city' => $city,
+    //             'state' => $state,
+    //             'address' => $address,
+    //             'coupen' => $coupen
     //         ]);
     //     }
+
     //     return response()->json([
     //         'status' => true,
-    //         'message' => "Otp Send Successfully"
+    //         'message' => "Send Data Successfully"
     //     ]);
     // }
 }

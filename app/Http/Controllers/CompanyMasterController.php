@@ -31,32 +31,6 @@ class CompanyMasterController extends Controller
         $url = 'https://api.indianjewelcast.com/api/Tag/GetFilters';
 
         $request = [
-            // "DeviceID"=>0,
-            // "SortBy"=> "",
-            // "SearchText"=> "",
-            // "TranType"=> "",
-            // "CatalogType"=> "",
-            // "CommaSeperate_ItemGroupID"=> "",
-            // "CommaSeperate_ItemID"=> "",
-            // "CommaSeperate_StyleID"=> "",
-            // "CommaSeperate_ProductID"=> "",
-            // "CommaSeperate_SubItemID"=> "",
-            // "CommaSeperate_AppItemCategoryID"=> "",
-            // "CommaSeperate_ItemSubID"=> "",
-            // "CommaSeperate_KarigarID"=> "",
-            // "CommaSeperate_BranchID"=> "",
-            // "CommaSeperate_Size"=> "",
-            // "CommaSeperate_CounterID"=> "",
-            // "MaxNetWt"=> "",
-            // "MinNetWt"=> "",
-            // "OnlyCartItem"=> "",
-            // "OnlyWishlistItem"=> "",
-            // "StockStatus"=> "",
-            // "FilterType"=> "",
-            // "DoNotShowInClientApp"=> "",
-            // "HasTagImage"=> ""
-
-            
             "CommaSeperate_AppItemCategoryID"=> "",
             "CommaSeperate_BranchID"=> "",
             "CommaSeperate_CompanyID"=> $company_master_id,
@@ -97,8 +71,8 @@ class CompanyMasterController extends Controller
                 'Content-Type: application/json',
                 // Add any other headers if required
             ],
-            CURLOPT_TIMEOUT => 30, // Timeout in seconds
-            CURLOPT_CONNECTTIMEOUT => 10, // Connection timeout in seconds
+            CURLOPT_TIMEOUT => 120, // Timeout in seconds
+            CURLOPT_CONNECTTIMEOUT => 60, // Connection timeout in seconds
         ]);
 
         // Execute the request
