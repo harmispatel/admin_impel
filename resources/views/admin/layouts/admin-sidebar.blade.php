@@ -543,12 +543,27 @@ $page_key = (isset(Route::current()->parameters()['page_key'])) ? Route::current
 
         @endcan
 
+        <li class="nav-item">
+            <a class="nav-link {{ $currentRouteName != 'management.form' && $currentRouteName != 'management.form.list' ? 'collapsed' : '' }} {{ $currentRouteName == 'management.form' || $currentRouteName == 'management.form.list' ? 'active-tab' : '' }}" data-bs-target="#management-nav" data-bs-toggle="collapse" href="#" aria-expanded="{{ $currentRouteName == 'management.form' || $currentRouteName == 'management.form.list' ? 'true' : 'false' }}">
+                <i class="fa-solid fa-calculator {{ $currentRouteName == 'management.form' || $currentRouteName == 'management.form' ? 'icon-tab' : '' }}"></i><span>Data Management Form</span><i class="bi bi-chevron-down ms-auto {{ $currentRouteName == 'management.form' || $currentRouteName == 'management.form' ? 'icon-tab' : '' }}"></i>
+            </a>
 
-
+            <ul id="management-nav" class="nav-content sidebar-ul collapse {{ $currentRouteName == 'management.form' || $currentRouteName == 'management.form' || $currentRouteName == 'management.form.list' || $currentRouteName == 'management.form' ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+                <li>
+                    <a href="{{ route('management.form') }}" class="{{ $currentRouteName == 'management.form' ? 'active' : '' }}">
+                        <i class="{{ $currentRouteName == 'management.form' ? 'bi bi-circle-fill' : 'bi bi-circle' }}"></i><span>Data Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('management.form.list') }}">
+                        <i class="{{ $currentRouteName == 'management.form.list' ? 'bi bi-circle-fill' : 'bi bi-circle' }}"></i><span>Data Management List</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        
         {{-- Settings --}}
-
         @can('settings.index')
-
         <li class="nav-item">
 
             <a class="nav-link {{ $currentRouteName == 'settings.index' ? '' : 'collapsed' }}" href="{{ route('settings.index') }}">
@@ -558,9 +573,6 @@ $page_key = (isset(Route::current()->parameters()['page_key'])) ? Route::current
             </a>
 
         </li>
-
         @endcan
-
     </ul>
-
 </aside>

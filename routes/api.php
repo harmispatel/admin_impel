@@ -208,15 +208,6 @@ Route::post('ready-to-pdf-delete', [CustomerApiController::class,'readyPdfRemove
 Route::post('add-pdf-design', [CustomerApiController::class,'addPdfDesign']);
 Route::post('pdf-design-list', [CustomerApiController::class,'listPdfDesign']);
 Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign']);
-
-
-
 Route::post('order-track-details', [CustomerApiController::class,'orderTrackDetails']);
-
-
-//company master
-
-
 Route::get('comanymaster', [CustomerApiController::class,'CompanyMaster']);
-
-Route::post('comanymaster-itemgroup', [CustomerApiController::class,'CompanyMasterItemGroup']);
+Route::get('comanymaster-itemgroup', [CustomerApiController::class,'CompanyMasterItemGroup']);

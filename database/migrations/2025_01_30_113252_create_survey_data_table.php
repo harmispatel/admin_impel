@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSurveyFormsTable extends Migration
+class CreateSurveyDataTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,8 @@ class CreateSurveyFormsTable extends Migration
      */
     public function up()
     {
-        // 'name' => $name,
-        // 'number' => $number,
-        // 'city' => $city,
-        // 'state' => $state,
-        // 'address' => $address,
-        // 'coupen' => $coupen
-        Schema::create('survey_forms', function (Blueprint $table) {
+        Schema::create('survey_data', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('number')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->longText('address')->nullable();
             $table->string('coupen')->nullable();
             $table->string('discount')->nullable();
             $table->string('date')->nullable();
@@ -41,6 +30,6 @@ class CreateSurveyFormsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('survey_forms');
+        Schema::dropIfExists('survey_data');
     }
 }

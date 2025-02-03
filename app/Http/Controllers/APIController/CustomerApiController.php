@@ -11,11 +11,9 @@ use Carbon\Carbon;
 use App\Traits\ImageTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ItemGroup, ReadyOrder, ReadyOrderItem, ReadyToPdf, surveyOtp, UserOtp};
-use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, ReadyPdfListResource, StateCitiesResource, TestimonialsCollection};
+use App\Models\{CompanyMaster,Tag, User, City, Page, Order, Metal, Design, Gender, Category, CartUser, CartDealer, AdminSetting, UserDocument, UserWishlist, DealerCollection, OrderDealerReport, OrderItems, WomansClubRequest, Testimonial, CartReady, DesignPdf, ItemGroup, ReadyOrder, ReadyOrderItem, ReadyToPdf, UserOtp};
+use App\Http\Resources\{BannerResource, CategoryResource, DesignsResource, DetailDesignResource, FlashDesignResource, HighestDesignResource, MetalResource, GenderResource, CustomerResource, DesignsCollectionFirstResource, DesignCollectionListResource, CartDelaerListResource, CartReadyListResource, OrderDelaerListResource, CartUserListResource, CompanyMasterItemResource, CompanyMasterResource, CustomPagesResource, DesignCollectionPDFListResource, HeaderTagsResource, OrderDetailsResource, OrdersResource, ReadyOrderDetailsResource, ReadyOrdersResource, ReadyPdfListResource, StateCitiesResource, TestimonialsCollection};
 use App\Http\Requests\APIRequest\{DesignDetailRequest, DesignsRequest, SubCategoryRequest, UserProfileRequest, WomansClubsRequest};
-use GuzzleHttp\Client;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -1822,7 +1820,8 @@ class CustomerApiController extends Controller
             CURLOPT_TIMEOUT => 120,
             CURLOPT_CONNECTTIMEOUT => 60,
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_VERBOSE => true
+            CURLOPT_VERBOSE => true,
+            CURLOPT_ENCODING => 'gzip, deflate',
         ]);
 
         // Execute the request
@@ -2340,6 +2339,7 @@ class CustomerApiController extends Controller
     // send otp
     public function SendLoginOtp(Request $request)
     {
+       
         $validatedData = Validator::make($request->all(), [
             'number' => 'required'
         ]);
@@ -3082,191 +3082,25 @@ class CustomerApiController extends Controller
         }
     }
 
-    public function CompanyMasterItemGroup(Request $request)
+    public function CompanyMasterItemGroup()
     {
         try {
-            $company_master_ids = $request->company_master_id;
-            if (is_array($company_master_ids) && !empty($company_master_ids)) {
-                $item_groups = ItemGroup::whereIn('company_master_id', $company_master_ids)->where('status',1)->get();
-                return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $item_groups);
+            $company_master_ids = CompanyMaster::where('status', 1)
+                ->pluck('company_tag_id')
+                ->toArray();
+    
+            if (!empty($company_master_ids)) {
+                $item_groups = ItemGroup::whereIn('company_master_id', $company_master_ids)
+                                        ->where('status', 1)
+                                        ->get();
+    
+                $data = new CompanyMasterItemResource(['item_groups' => $item_groups]);
+                return $this->sendApiResponse(true, 0, 'Company Master Fetched.', $data);
             }
+    
+            return $this->sendApiResponse(false, 0, 'No company master found.', (object)[]);
         } catch (\Throwable $th) {
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
-
-
-    // public function SendOtp(Request $request)
-    // {
-    //     $validatedData = Validator::make($request->all(), [
-    //         'number' => 'required'
-    //     ]);
-
-    //     if ($validatedData->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validatedData->errors()->first()
-    //         ]);
-    //     }
-
-    //     $curl = curl_init();
-    //     $number = $request->number;
-    //     $otp = rand(100000, 999999); 
-    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
-    //     $senderid = 'IMPELE';
-    //     $channel = 2;
-    //     $DCS = 0;
-    //     $flashsms = 0;
-    //     $text = "Welcome to Impel, {$otp} is your OTP Please Verify.";
-    //     $route = 31;
-    //     $EntityId = 1701172630214402951;
-    //     $dlttemplateid = 1707172648675000362;
-
-    //     // Set the POST URL
-    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
-
-    //     // Set the query parameters
-    //     $queryParams = http_build_query([
-    //         'APIKey' => $APIKey,
-    //         'senderid' => $senderid,
-    //         'channel' => $channel,
-    //         'DCS' => $DCS,
-    //         'flashsms' => $flashsms,
-    //         'number' => $number,
-    //         'text' => $text,
-    //         'route' => $route,
-    //         'EntityId' => $EntityId,
-    //         'dlttemplateid' => $dlttemplateid
-    //     ]);
-
-    //     // Set curl options
-    //     curl_setopt_array($curl, [
-    //         CURLOPT_URL => $url.'?' . $queryParams,
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_TIMEOUT => 30,
-    //         CURLOPT_CONNECTTIMEOUT => 10,
-    //     ]);
-
-    //     // Execute the request
-    //     $response = curl_exec($curl);
-
-    //     // Check for errors
-    //     if (curl_errno($curl)) {
-    //         $error = curl_error($curl);
-    //         curl_close($curl);
-    //         return response()->json(['error' => $error], 500);
-    //     }
-
-    //     // Close cURL
-    //     curl_close($curl);
-    //     $responseData = json_decode($response, true);
-
-    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
-    //         $now = now();
-           
-    //         $user = surveyOtp::where('number',$number)->first();
-    //         if(!empty($user)){
-    //             $user->delete();
-    //         }
-
-    //         surveyOtp::create([
-    //             'number' => $number,
-    //             'otp' => $otp,
-    //             'expire_at' => $now->addMinutes(3),
-    //         ]);
-    //     }
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => "Otp Send Successfully"
-    //     ]);
-    // }
-
-    // public function SendMessage(Request $request)
-    // {
-    //     $validatedData = Validator::make($request->all(), [
-    //         'number' => 'required',
-    //     ]);
-
-    //     if ($validatedData->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validatedData->errors()->first()
-    //         ]);
-    //     }
-
-    //     $name = $request->name;
-    //     $number = $request->number;
-    //     $city = $request->city;
-    //     $state = $request->state;
-    //     $address = $request->address;
-    //     $coupen = $request->coupen;
-
-    //     $curl = curl_init();
-    //     $otp = rand(100000, 999999); 
-    //     $APIKey = 'q9o165ctikCFWUQWnqLBww';
-    //     $senderid = 'IMPELE';
-    //     $channel = 2;
-    //     $DCS = 0;
-    //     $flashsms = 0;
-    //     $text = "Welcome to Impel, {$otp} is your OTP for Impel Please Verify.";
-    //     $route = 31;
-    //     $EntityId = 1701172630214402951;
-    //     $dlttemplateid = 1707172648675000362;
-
-    //     // Set the POST URL
-    //     $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
-
-    //     // Set the query parameters
-    //     $queryParams = http_build_query([
-    //         'APIKey' => $APIKey,
-    //         'senderid' => $senderid,
-    //         'channel' => $channel,
-    //         'DCS' => $DCS,
-    //         'flashsms' => $flashsms,
-    //         'number' => $number,
-    //         'text' => $text,
-    //         'route' => $route,
-    //         'EntityId' => $EntityId,
-    //         'dlttemplateid' => $dlttemplateid
-    //     ]);
-
-    //     // Set curl options
-    //     curl_setopt_array($curl, [
-    //         CURLOPT_URL => $url.'?' . $queryParams,
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_TIMEOUT => 30,
-    //         CURLOPT_CONNECTTIMEOUT => 10,
-    //     ]);
-
-    //     // Execute the request
-    //     $response = curl_exec($curl);
-
-    //     // Check for errors
-    //     if (curl_errno($curl)) {
-    //         $error = curl_error($curl);
-    //         curl_close($curl);
-    //         return response()->json(['error' => $error], 500);
-    //     }
-
-    //     // Close cURL
-    //     curl_close($curl);
-    //     $responseData = json_decode($response, true);
-
-    //     if (isset($responseData['ErrorCode']) && $responseData['ErrorCode'] === '000') {
-     
-    //         surveyOtp::create([
-    //             'name' => $name,
-    //             'number' => $number,
-    //             'city' => $city,
-    //             'state' => $state,
-    //             'address' => $address,
-    //             'coupen' => $coupen
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => "Send Data Successfully"
-    //     ]);
-    // }
 }

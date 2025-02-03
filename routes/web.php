@@ -4,7 +4,7 @@
 
 use Illuminate\Support\Facades\{Auth, Route, Artisan};
 
-use App\Http\Controllers\{AuthController, DashboardController, CategoryController, TagController, DesignController, RoleController, AdminController, AdminSettingsController, BottomBannerController, CommonController, CustomerController, DealerController , OrderController, ReportController, ImportExportController, MiddleBannerController, PageController, TestimonialController, TopBannerController, WomansClubRequestController, CompanyMasterController};
+use App\Http\Controllers\{AuthController, DashboardController, CategoryController, TagController, DesignController, RoleController, AdminController, AdminSettingsController, BottomBannerController, CommonController, CustomerController, DealerController , OrderController, ReportController, ImportExportController, MiddleBannerController, PageController, TestimonialController, TopBannerController, WomansClubRequestController, CompanyMasterController, DataManagementFormController};
 
 use Illuminate\Http\Request;
 
@@ -543,17 +543,19 @@ Route::group(['prefix' => 'admin'], function ()
 
         })->name('fetch.design.excel');
 
-
-
-
-
+        //data management form
+        Route::controller(DataManagementFormController::class)->group(function () {
+            Route::get('datamanagement-form', 'index')->name('management.form');
+            Route::get('datamanagement-forms-list', 'formList')->name('management.form.list');
+            Route::post('survay-form', 'survayForm')->name('survar.store');
+            Route::get('survay-data', 'survayData');
+            Route::post('send-otp', 'SendOtp')->name('send.otp');
+            Route::post('survay-with-otp', 'survayWithOtp')->name('survay.withotp');
+            Route::post('offer-message', 'offerMessage')->name('offer.message');
+            Route::post('connect-message', 'connectMessage')->name('connect.message');
+        });
     });
-
-
-
     Route::get('orders/print/{id}', [OrderController::class, 'print'])->name('orders.print');
-
     Route::get('orders/shared/{id}', [OrderController::class, 'shared'])->name('orders.shared');
-
 });
 
