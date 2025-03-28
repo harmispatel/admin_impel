@@ -161,6 +161,8 @@
 
                         <!-- Share Message -->
                         <div class="mb-3">
+                            <input type="hidden" name="send_offer_message" id="send_offer_message">
+                            <input type="hidden" name="send_social_media_message" id="send_social_media_message">
                             <button type="button" class="btn btn-success" onclick="sendOfferMessage()" id="verifyOtpBtn">Offer Message</button>
                             <button type="button" class="btn btn-success" onclick="sendSocialMediaMessage()" id="verifyOtpBtn">Share Social Media Message</button>
                         </div>
@@ -249,8 +251,10 @@
             dataType: 'JSON',
             success: function(response) {
                 if (response.success == 1) {
+                    $("#send_offer_message").val('true'); 
                     toastr.success(response.message);
                 } else {
+                    $("#send_offer_message").val('false'); 
                     toastr.error(response.message);
                 }
             },
@@ -275,8 +279,10 @@
             dataType: 'JSON',
             success: function(response) {
                 if (response.success == 1) {
+                    $("#send_social_media_message").val('true'); 
                     toastr.success(response.message);
                 } else {
+                    $("#send_social_media_message").val('false'); 
                     toastr.error(response.message);
                 }
             },

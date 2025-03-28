@@ -211,3 +211,6 @@ Route::post('remove-pdf-design', [CustomerApiController::class,'removePdfDesign'
 Route::post('order-track-details', [CustomerApiController::class,'orderTrackDetails']);
 Route::get('comanymaster', [CustomerApiController::class,'CompanyMaster']);
 Route::get('comanymaster-itemgroup', [CustomerApiController::class,'CompanyMasterItemGroup']);
+
+
+Route::post('ready-to-dispatch-filter-price', [CustomerApiController::class,'ReadyToDispatchFilterPrice']);

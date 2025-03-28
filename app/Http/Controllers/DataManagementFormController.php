@@ -36,7 +36,7 @@ class DataManagementFormController extends Controller
             $text = "Welcome to Impel, {$otp} is your OTP Please Verify.";
             $route = 31;
             $EntityId = 1701172630214402951;
-            $dlttemplateid = 1707173831640865012;
+            $dlttemplateid = 1707173856837408268;
     
             // Set the POST URL
             $url = 'https://www.smsgatewayhub.com/api/mt/SendSMS';
@@ -263,6 +263,8 @@ class DataManagementFormController extends Controller
                 'flat_no' => $request->flat_no,
                 'society' => $request->society,
                 'area' => $request->area,
+                'send_offer_message' => $request->send_offer_message,
+                'send_social_media_message' => $request->send_social_media_message
             ]);
 
             $input = $request->except('name','number','city','state','address','otp');

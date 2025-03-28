@@ -3103,4 +3103,129 @@ class CustomerApiController extends Controller
             return $this->sendApiResponse(false, 0, 'Oops, Something went wrong!', (object)[]);
         }
     }
+
+    public function readyToDispatchfil(Request $request)
+    {
+        $curl = curl_init();
+        $url = 'https://api.indianjewelcast.com/api/Tag/GetAll';
+        $data = json_encode($request->all());
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 120,
+            CURLOPT_CONNECTTIMEOUT => 60,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_VERBOSE => true,
+            CURLOPT_ENCODING => 'gzip, deflate',
+        ]);
+
+        // Execute the request
+        $response = curl_exec($curl);
+        if (curl_errno($curl)) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            return ['error' => $error]; // Return an array instead of a string
+        }
+
+        curl_close($curl);
+
+        // Decode JSON response
+        $decodedResponse = json_decode($response, true); // Convert JSON string to an associative array
+
+        return $decodedResponse ?? []; // Return empty array if decoding fails
+    }
+
+    public function ReadyToDispatchFilterPrice(Request $request)
+    {
+        try {
+            $min_price = $request->min_price;
+            $max_price = $request->max_price;
+            $page = $request->input('page',1);
+            $perpage = 20;
+
+            $ready_to_dis = $this->readyToDispatchfil($request);
+            $admin_settings = getAdminSettings();
+
+            $gold_data = [
+                'sales_wastage_rtd' => isset($admin_settings['sales_wastage_rtd']) && !empty($admin_settings['sales_wastage_rtd']) ? unserialize($admin_settings['sales_wastage_rtd']) : [],
+                'sales_wastage_discount_rtd' => isset($admin_settings['sales_wastage_discount_rtd']) && !empty($admin_settings['sales_wastage_discount_rtd']) ? unserialize($admin_settings['sales_wastage_discount_rtd']) : [],
+                'price_24k' => isset($admin_settings['price_24k']) && !empty($admin_settings['price_24k']) ? unserialize($admin_settings['price_24k']) : [],
+                'show_estimate' => isset($admin_settings['show_estimate']) && !empty($admin_settings['show_estimate']) ? unserialize($admin_settings['show_estimate']) : [],
+            ];
+
+            $filtered_data = [];
+
+            if (!isset($ready_to_dis['Tags']) || !is_array($ready_to_dis['Tags'])) {
+                throw new \Exception("Invalid response from API: 'Tags' key missing or not an array.");
+            }
+
+            $filtered_data = [];
+            foreach ($ready_to_dis['Tags'] as $tag) {
+                $subItemID = $tag['SubItemID'] ?? null;
+                $touch = $tag['Touch'] ?? 0;
+                $netWt = $tag['NetWt'] ?? 0;
+
+                if ($subItemID !== null && isset($gold_data['price_24k'][$subItemID])) {
+                    $price_24k = $gold_data['price_24k'][$subItemID] ?? 0;
+                    $sales_wastage = $gold_data['sales_wastage_rtd'][$subItemID] ?? 0;
+                    $sales_wastage_discount = $gold_data['sales_wastage_discount_rtd'][$subItemID] ?? 0;
+
+                    $labour_charge = ($price_24k * $sales_wastage) / 100;
+                    if ($labour_charge > 0) {
+                        $labour_charge *= $netWt;
+                    }
+
+                    $labour_charge_discount = $sales_wastage_discount > 0 ? $labour_charge - ($labour_charge * $sales_wastage_discount) / 100 : 0;
+
+                    $metal_value = ($price_24k * ($touch / 100) * $netWt);
+
+                     $finalPriceWithoutDis = $metal_value + $labour_charge;
+                     $finalPriceWithDis = $metal_value + $labour_charge_discount;
+
+                    $finalPrice = ($labour_charge_discount > 0) ? $finalPriceWithDis  : $finalPriceWithoutDis;
+
+                    if ($finalPrice >= $min_price && $finalPrice <= $max_price) {
+                        $tag['FinalPrice'] = $finalPrice;
+                        $filtered_data[] = $tag;
+                    }
+                }
+            }
+            // return response()->json([
+            //         "Messages"=>[],
+            //         "TotalItems"=> count($filtered_data),
+            //         'Tags' => $filtered_data
+            //     ]);
+             // Paginate the filtered results manually
+        $totalItems = count($filtered_data);
+        $paginatedData = array_slice($filtered_data, ($page - 1) * $perPage, $perPage);
+        $pagination = new LengthAwarePaginator($paginatedData, $totalItems, $perPage, $page, [
+            'path' => url()->current(),
+            'query' => $request->query(),
+        ]);
+
+        return response()->json([
+            "Messages" => [],
+            "TotalItems" => $totalItems,
+            "Tags" => $pagination->items(),
+            "Pagination" => [
+                "current_page" => $pagination->currentPage(),
+                "per_page" => $pagination->perPage(),
+                "total" => $pagination->total(),
+                "last_page" => $pagination->lastPage(),
+                "next_page_url" => $pagination->nextPageUrl(),
+                "prev_page_url" => $pagination->previousPageUrl(),
+            ],
+        ]);
+
+        } catch (\Throwable $th) {
+            //dd($th);
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
 }
